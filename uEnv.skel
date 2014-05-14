@@ -1,0 +1,21 @@
+#SPI: enable for userspace spi access on expansion header
+#buddy=spidev
+
+#These are now set by default: uncomment/change if you need something else
+#defaultdisplay=dvi
+#dvimode=1280x720MR-16@60
+
+# debug - XXX not appended
+#optargs=debug earlyprintk
+
+# vmlinuz
+bootpart=0:3
+bootdir=/boot
+bootfile=vmlinuz
+
+# rootfs
+mmcroot=/dev/mmcblk0p3 ro
+mmcrootfstype=ext4 rootwait fixrtc
+
+# dtb
+loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/dtbs/${fdtfile}

@@ -1,0 +1,7 @@
+board: panda
+uboot-prefix: omap4_panda
+bootloaders: MLO>MLO u-boot.bin>u-boot.img
+
+board: beaglebone
+uboot-prefix: am335x_boneblack
+bootloaders: MLO>MLO u-boot.img>u-boot.img
