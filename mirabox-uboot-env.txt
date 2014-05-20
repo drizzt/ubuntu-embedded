@@ -1,0 +1,9 @@
+Turn on the Globalscale Mirabox, stop the boot process and type in:
+
+setenv loadaddr 0x6400000
+setenv initrdaddr 0x7000000
+setenv loadimage "fat2load usb 1 ${loadaddr} uImage"
+setenv loadinitrd "fat2load usb 1 ${initrdaddr} uInitrd"
+setenv bootargs_ubuntu "setenv bootargs console=ttyS0,115200 root=/dev/sdb2 rw rootwait debug earlyprintk"
+setenv bootcmd_ubuntu "usb start; run loadimage; run loadinitrd; run bootargs_ubuntu; bootm ${loadaddr} ${initrdaddr}:$filesize"
+setenv bootcmd "run bootcmd_ubuntu"

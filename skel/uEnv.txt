@@ -1,0 +1,32 @@
+#SPI: enable for userspace spi access on expansion header
+#buddy=spidev
+
+#These are now set by default: uncomment/change if you need something else
+#defaultdisplay=dvi
+#dvimode=1280x720MR-16@60
+
+# debug - XXX not appended
+#optargs=debug earlyprintk
+
+loadaddr=0x80000000
+initrdaddr=0x82000000
+
+# vmlinuz
+bootpart=0:2
+bootdir=/boot
+bootfile=uImage
+initrdfile=uInitrd
+
+# rootfs
+mmcroot=/dev/mmcblk0p2 ro
+mmcrootfstype=ext4 rootwait
+
+mmcargs=setenv bootargs console=${console} ${optargs} root=${mmcroot} rootfstype=${mmcrootfstype}
+loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}
+loadinitrd=load mmc ${bootpart} ${initrdaddr} ${bootdir}/${initrdfile}
+bootcmd=run mmcargs; run loadimage; run loadinitrd; bootm ${loadaddr} ${initrdaddr}:${filesize}
+uenvcmd=boot
+
+# XXX to be applied when /boot/dtb symlink lands
+#loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/dtb/${fdtfile}
+#bootfile=vmlinuz

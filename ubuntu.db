@@ -1,7 +1,39 @@
+board: beaglexm
+machine: OMAP3 Beagle Board
+layout: BOOTDIR,vfat,256M /,ext4,FILL
+uboot-prefix: omap3_beagle
+bootloaders: MLO>MLO u-boot.bin>u-boot.img
+serial: ttyO2
+
 board: panda
+machine: OMAP4 Panda board
+layout: BOOTDIR,vfat,256M /,ext4,FILL
 uboot-prefix: omap4_panda
 bootloaders: MLO>MLO u-boot.bin>u-boot.img
+serial: ttyO2
 
 board: beaglebone
+machine: TI AM335x BeagleBone
+layout: BOOTDIR,vfat,256M /,ext4,FILL
 uboot-prefix: am335x_boneblack
 bootloaders: MLO>MLO u-boot.img>u-boot.img
+serial: ttyO0
+
+board: mirabox
+machine: Globalscale Mirabox
+# layout: mountpoint,filesystem,size
+# where:
+# mountpoint could be any of /, /boot, BOOTDIR, SKIP
+# filesystem could be any of vfat, ext2, ext4, etc
+# size could be any of ...MB or FILL
+# XXX the bootloader shipped with this board is CRAP!!!
+#layout: /boot,ext2,256M /,ext4,FILL
+layout: BOOTDIR,vfat,256M /,ext4,FILL
+serial: ttyS0
+
+board: cubox
+serial: ttymxc0
+
+# XXX stub, not working yet
+board: arndale
+uboot-prefix: exynos5

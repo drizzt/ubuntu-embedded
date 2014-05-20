@@ -1,0 +1,50 @@
+--- /usr/share/flash-kernel/functions.orig	2014-07-24 15:50:29.000000000 +0000
++++ /usr/share/flash-kernel/functions	2014-07-24 17:03:44.000000000 +0000
+@@ -338,6 +338,31 @@
+ 	exit 1
+ fi
+ 
++# custom switches to override specific db fields
++if [ "x$1" = "x--bootdevice" ]; then
++	boot_device="$2"
++	skipbootdevice=1
++	shift 2
++fi
++
++if [ "x$1" = "x--kernelpath" ]; then
++	boot_kernel_path="$2"
++	skipkernelpath=1
++	shift 2
++fi
++
++if [ "x$1" = "x--initrdpath" ]; then
++        boot_initrd_path="$2"
++	skipinitrdpath=1
++        shift 2
++fi
++
++if [ "x$1" = "x--scriptpath" ]; then
++        boot_script_path="$2"
++        skipscriptpath=1
++        shift 2
++fi
++
+ # kernel + initrd installation/upgrade mode, with optional version
+ 
+ kvers="$1"
+@@ -404,10 +429,11 @@
+ umaddr="$(get_machine_field "$machine" "U-Boot-Multi-Address")" || :
+ usaddr="$(get_machine_field "$machine" "U-Boot-Script-Address")" || :
+ usname="$(get_machine_field "$machine" "U-Boot-Script-Name")" || :
+-boot_device="$(get_machine_field "$machine" "Boot-Device")" || :
+-boot_kernel_path="$(get_machine_field "$machine" "Boot-Kernel-Path")" || :
+-boot_initrd_path="$(get_machine_field "$machine" "Boot-Initrd-Path")" || :
+-boot_script_path="$(get_machine_field "$machine" "Boot-Script-Path")" || :
++[ ! "$skipbootdevice" ] && boot_device="$(get_machine_field "$machine" "Boot-Device")" || :
++[ ! "$skipkernelpath" ] && boot_kernel_path="$(get_machine_field "$machine" "Boot-Kernel-Path")" || :
++[ ! "$skipinitrdpath" ] && boot_initrd_path="$(get_machine_field "$machine" "Boot-Initrd-Path")" || :
++[ ! "$skipscriptpath" ] && boot_script_path="$(get_machine_field "$machine" "Boot-Script-Path")" || :
++
+ boot_dtb_path="$(get_machine_field "$machine" "Boot-Dtb-Path")" || :
+ boot_multi_path="$(get_machine_field "$machine" "Boot-Multi-Path")" || :
+ android_boot_device="$(get_machine_field "$machine" "Android-Boot-Device")" || :
