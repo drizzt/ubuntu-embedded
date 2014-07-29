@@ -228,7 +228,7 @@ do_bootloader()
 }
 
 BOARDS="$(get_all_fields "board")"
-DISTROS="14.04 14.10"
+DISTROS="14.04"
 ARCH="armhf"
 
 usage()
@@ -240,7 +240,8 @@ Available values for:
 \$DISTRO: $DISTROS
 
 Other options:
--f  <device>  device installation target"
+-f  <device>  device installation target
+-e <release>  release used for the enablement stack (kernel, bootloader and flask-kernel)"
 	exit 1
 }
 
@@ -260,6 +261,9 @@ while [ $# -gt 0 ]; do
 		-f)
 			[ -n "$2" ] && DEVICE=$2 shift || usage
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
+			;;
+		-e)
+			[ -n "$2" ] && BACKPORT=$2 shift || usage
 			;;
 		*|h)
 			usage
@@ -295,12 +299,9 @@ BOOTDIR=$(mktemp -d /tmp/embedded-boot.XXXXXX)
 FSTABFILE=$(mktemp /tmp/embedded-fstab.XXXXXX)
 MOUNTFILE=$(mktemp /tmp/embedded-mount.XXXXXX)
 
-[ $DISTRO = "14.10" ] && ROOTDISTRO="14.04"
-
 echo "Summary: "
 echo $BOARD
 echo $DISTRO
-echo $ROOTDISTRO
 echo $BOOTDIR
 echo $ROOTFSDIR
 echo $FSTABFILE
@@ -330,7 +331,7 @@ layout_device
 echo "== Init System =="
 mount $ROOTDEVICE $ROOTFSDIR
 [ $? -eq 0 ] && echo $ROOTDEVICE >> $MOUNTFILE
-CORE="http://cdimage.ubuntu.com/ubuntu-core/releases/$ROOTDISTRO/release/ubuntu-core-$ROOTDISTRO-core-$ARCH.tar.gz"
+CORE="http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz"
 wget -qO- $CORE | tar zxf - -C $ROOTFSDIR
 
 # end of init_system_generic()
@@ -366,9 +367,9 @@ echo "$BOARD" > $ROOTFSDIR/etc/hostname
 # - apply all custom patches
 # - run flash-kernel as last step
 echo "== Install pkgs =="
-if [ $DISTRO = "14.10" ]; then
-	cp $ROOTFSDIR/etc/apt/sources.list $ROOTFSDIR/etc/apt/sources.list.orig
-	sed 's/trusty/utopic/g' $ROOTFSDIR/etc/apt/sources.list.orig > $ROOTFSDIR/etc/apt/sources.list
+if [ $BACKPORT ]; then
+	sed "s/trusty/${BACKPORT}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${BACKPORT}.list
+	sed "s/CODENAME/${BACKPORT}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${BACKPORT}
 fi
 do_chroot $ROOTFSDIR apt-get update
 # don't run flash-kernel during installation
