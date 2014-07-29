@@ -233,7 +233,8 @@ ARCH="armhf"
 
 usage()
 {
-	echo "usage: $(basename $0) -b \$BOARD -d \$DISTRO [options...]
+cat << EOF
+usage: $(basename $0) -b \$BOARD -d \$DISTRO [options...]
 
 Available values for:
 \$BOARD: $BOARDS
@@ -241,7 +242,8 @@ Available values for:
 
 Other options:
 -f  <device>  device installation target
--e <release>  release used for the enablement stack (kernel, bootloader and flask-kernel)"
+-e <release>  release used for the enablement stack (kernel, bootloader and flask-kernel)
+EOF
 	exit 1
 }
 

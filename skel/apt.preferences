@@ -1,0 +1,19 @@
+Package: linux-image*
+Pin: release n=CODENAME
+Pin-Priority: 990
+
+Package: u-boot*
+Pin: release n=CODENAME
+Pin-Priority: 990
+
+Package: flash-kernel
+Pin: release n=CODENAME
+Pin-Priority: 990
+
+Package: *
+Pin: release n=trusty
+Pin-Priority: 900
+
+Package: *
+Pin: release o=Ubuntu
+Pin-Priority: -10
