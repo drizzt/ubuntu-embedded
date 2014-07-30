@@ -292,7 +292,16 @@ Available values for:
 
 Other options:
 -f  <device>  device installation target
--e <release>  release used for the enablement stack (kernel, bootloader and flask-kernel)
+
+Misc "catch-all" option:
+-o <stack,user,passwd,imgsize> set the correspective value
+
+where:
+
+stack:			release used for the enablement stack (kernel, bootloader and flask-kernel)
+size:			size of the image file * 1MB (e.g. 1024 = 1G)
+user:			credentials of the user created on the target image
+passwd:			same as above, but for the password here
 EOF
 	exit 1
 }
@@ -315,9 +324,25 @@ while [ $# -gt 0 ]; do
 			[ -n "$2" ] && DEVICE=$2 shift || usage
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
 			;;
-		-e)
-			[ -n "$2" ] && STACK=$2 shift || usage
-			[ -z $(ugetcod "$STACK") ] && echo "Error: $STACK is not a valid realease" && exit 1
+		-o)
+			[ "$2" ] && ARG=$2 shift || usage
+			cmd=${ARG%%=*}
+			arg=${ARG#*=}
+			# quick syntax check
+			[ "$cmd" = "$arg" ] && echo "Error: syntax error for $ARG" && exit 1
+			#echo "cmd: $cmd arg: ${arg:-null}"
+			case "$cmd" in
+				"passwd") PASSWD="$arg" ;;
+				"size") IMGSIZE=`numfmt --from=none $arg` ;;
+				"stack")
+					[ -z $(ugetcod "$arg") ] && echo "Error: $arg is not a valid realease" && exit 1
+					STACK="$arg"
+					;;
+				"user") USER="$arg" ;;
+				*)
+					echo "Error: $ARG unknown option" && exit 1
+					;;
+			esac
 			;;
 		*|h)
 			usage
@@ -410,8 +435,8 @@ cp /etc/resolv.conf $ROOTFSDIR/etc
 cp $FSTABFILE $ROOTFSDIR/etc/fstab
 [ -n $SERIAL ] && sed "s/ttyX/$SERIAL/g" skel/serial.conf > $ROOTFSDIR/etc/init/${SERIAL}.conf
 do_chroot $ROOTFSDIR useradd $USER -m -p `mkpasswd $PASSWD` -s /bin/bash
-do_chroot $ROOTFSDIR adduser ubuntu adm
-do_chroot $ROOTFSDIR adduser ubuntu sudo
+do_chroot $ROOTFSDIR adduser $USER adm
+do_chroot $ROOTFSDIR adduser $USER sudo
 cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
 
