@@ -1,17 +1,17 @@
 Package: linux-image*
-Pin: release n=CODENAME
+Pin: release n=STACK
 Pin-Priority: 990
 
 Package: u-boot*
-Pin: release n=CODENAME
+Pin: release n=STACK
 Pin-Priority: 990
 
 Package: flash-kernel
-Pin: release n=CODENAME
+Pin: release n=STACK
 Pin-Priority: 990
 
 Package: *
-Pin: release n=trusty
+Pin: release n=DISTRO
 Pin-Priority: 900
 
 Package: *

@@ -414,8 +414,10 @@ echo "$BOARD" > $ROOTFSDIR/etc/hostname
 # - run flash-kernel as last step
 echo "== Install pkgs =="
 if [ "${STACK}" ]; then
-	sed "s/trusty/${STACK}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${STACK}.list
-	sed "s/CODENAME/${STACK}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${STACK}
+	DCOD=$(ugetcod "${DISTRO}")
+	SCOD=$(ugetcod "${STACK}")
+	sed "s/${DCOD}/${SCOD}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${SCOD}.list
+	sed -e "s/STACK/${SCOD}/g" -e "s/DISTRO/${DCOD}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${SCOD}
 fi
 do_chroot $ROOTFSDIR apt-get update
 # don't run flash-kernel during installation
