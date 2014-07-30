@@ -57,6 +57,46 @@ TAILPID=$!
 
 exec 3>&1 4>&2 >build.log 2>&1
 
+ARRAY=("14.04:trusty" "14.10:utopic")
+
+ubuntuversion() {
+	local CMD="$1"
+	local KEY="$2"
+	local RET=""
+
+	for ubuntu in "${ARRAY[@]}" ; do
+		REL=${ubuntu%%:*}
+		COD=${ubuntu#*:}
+		if [ "${CMD}" = "release" ]; then
+			[ "${KEY}" = "${COD}" ] && RET="${REL}" && break
+		elif [ "${CMD}" = "codename" ]; then
+			[ "${KEY}" = "${REL}" ] && RET="${COD}" && break
+		elif [ "${CMD}" = "releases" ]; then
+			if [ "${RET}" ]; then
+				RET="${RET} ${REL}"
+			else
+				RET="${REL}"
+			fi
+		fi
+	done
+	echo "${RET}"
+}
+
+ugetrel()
+{
+	echo $(ubuntuversion "release" "$1")
+}
+
+ugetcod()
+{
+	echo $(ubuntuversion "codename" "$1")
+}
+
+ugetrels()
+{
+	echo $(ubuntuversion "releases")
+}
+
 get_all_fields() {
 	local field="$1"
 	local all
@@ -228,7 +268,6 @@ do_bootloader()
 }
 
 BOARDS="$(get_all_fields "board")"
-DISTROS="14.04"
 ARCH="armhf"
 
 usage()
@@ -238,7 +277,7 @@ usage: $(basename $0) -b \$BOARD -d \$DISTRO [options...]
 
 Available values for:
 \$BOARD: $BOARDS
-\$DISTRO: $DISTROS
+\$DISTRO: $(ugetrels)
 
 Other options:
 -f  <device>  device installation target
@@ -259,6 +298,7 @@ while [ $# -gt 0 ]; do
 			;;
 		-d)
 			[ -n "$2" ] && DISTRO=$2 shift || usage
+			[ -z $(ugetcod "$DISTRO") ] && echo "Error: $DISTRO is not a valid input" && exit 1
 			;;
 		-f)
 			[ -n "$2" ] && DEVICE=$2 shift || usage
@@ -266,6 +306,7 @@ while [ $# -gt 0 ]; do
 			;;
 		-e)
 			[ -n "$2" ] && BACKPORT=$2 shift || usage
+			[ -z $(ugetcod "$BACKPORT") ] && echo "Error: $BACKPORT is not a valid realease" && exit 1
 			;;
 		*|h)
 			usage
@@ -292,6 +333,9 @@ MKPASSWD=$(which mkpasswd) || true
 SERIAL=$(get_field "$BOARD" "serial") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
+
+# sanitize input params
+[ "$DISTRO" = "$BACKPORT" ] && BACKPORT=""
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
