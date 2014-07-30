@@ -305,8 +305,8 @@ while [ $# -gt 0 ]; do
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
 			;;
 		-e)
-			[ -n "$2" ] && BACKPORT=$2 shift || usage
-			[ -z $(ugetcod "$BACKPORT") ] && echo "Error: $BACKPORT is not a valid realease" && exit 1
+			[ -n "$2" ] && STACK=$2 shift || usage
+			[ -z $(ugetcod "$STACK") ] && echo "Error: $STACK is not a valid realease" && exit 1
 			;;
 		*|h)
 			usage
@@ -335,7 +335,7 @@ UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 
 # sanitize input params
-[ "$DISTRO" = "$BACKPORT" ] && BACKPORT=""
+[ "$DISTRO" = "$STACK" ] && STACK=""
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
@@ -413,9 +413,9 @@ echo "$BOARD" > $ROOTFSDIR/etc/hostname
 # - apply all custom patches
 # - run flash-kernel as last step
 echo "== Install pkgs =="
-if [ $BACKPORT ]; then
-	sed "s/trusty/${BACKPORT}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${BACKPORT}.list
-	sed "s/CODENAME/${BACKPORT}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${BACKPORT}
+if [ "${STACK}" ]; then
+	sed "s/trusty/${STACK}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${STACK}.list
+	sed "s/CODENAME/${STACK}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${STACK}
 fi
 do_chroot $ROOTFSDIR apt-get update
 # don't run flash-kernel during installation
