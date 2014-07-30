@@ -142,6 +142,18 @@ get_field() {
 	}
 }
 
+mount_dev()
+{
+	local DEV="$1"
+	local DIR="$2"
+
+	#echo "mount x${DEV}x y${DIR}y"
+	mount "${DEV}" "${DIR}"
+	[ $? -eq 0 ] && echo "${DEV}" >> "${MOUNTFILE}" && return
+	exit $?
+}
+
+
 do_chroot()
 {
 		local ROOT="$1"
@@ -247,8 +259,7 @@ layout_device()
 
 do_bootloader()
 {
-	mount $BOOTDEVICE $BOOTDIR
-	[ $? -eq 0 ] && echo $BOOTDEVICE >> $MOUNTFILE
+	mount_dev "${BOOTDEVICE}" "${BOOTDIR}"
 	cp skel/uEnv.txt $BOOTDIR
 	if [ "${BOOTLOADERS}" ]; then
 		local SRC="$ROOTFSDIR"
@@ -375,8 +386,7 @@ layout_device
 # - download ubuntu core/rootfs
 # - install rootfs
 echo "== Init System =="
-mount $ROOTDEVICE $ROOTFSDIR
-[ $? -eq 0 ] && echo $ROOTDEVICE >> $MOUNTFILE
+mount_dev "${ROOTDEVICE}" "${ROOTFSDIR}"
 CORE="http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz"
 wget -qO- $CORE | tar zxf - -C $ROOTFSDIR
 
@@ -392,8 +402,7 @@ while read line; do
 	[ $MPOINT = "/" ] && continue
 	UUID=`echo $line | cut -f1 -d " " | cut -f 2 -d =`
 	DEV=`blkid -U $UUID`
-	mount $DEV $ROOTFSDIR/$MPOINT
-	[ $? -eq 0 ] && echo $DEV >> $MOUNTFILE
+	mount_dev "${DEV}" "${ROOTFSDIR}/${MPOINT}"
 done < $FSTABFILE
 
 cp $QEMU $ROOTFSDIR/usr/bin
@@ -439,4 +448,4 @@ do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 # - copy bootscript
 # - install bootloaders
 echo "== Install Bootloader =="
-[ -n $BOOTDEVICE ] && do_bootloader
+[ "${BOOTDEVICE}" ] && do_bootloader
