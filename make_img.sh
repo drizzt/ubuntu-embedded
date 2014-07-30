@@ -250,7 +250,7 @@ do_bootloader()
 	mount $BOOTDEVICE $BOOTDIR
 	[ $? -eq 0 ] && echo $BOOTDEVICE >> $MOUNTFILE
 	cp skel/uEnv.txt $BOOTDIR
-	if [ ${BOOTLOADERS} ]; then
+	if [ "${BOOTLOADERS}" ]; then
 		local SRC="$ROOTFSDIR"
 		local DEST="$BOOTDIR"
 		local PREFIX="usr/lib/u-boot/$UBOOTPREF"
