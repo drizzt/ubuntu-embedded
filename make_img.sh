@@ -312,18 +312,18 @@ EOF
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-b)
-			[ -n "$2" ] && BOARD=$2 shift || usage
+			[ -n "$2" ] && BOARD=$2 && shift || usage
 			;;
 		-d)
-			[ -n "$2" ] && DISTRO=$2 shift || usage
+			[ -n "$2" ] && DISTRO=$2 && shift || usage
 			[ -z $(ugetcod "$DISTRO") ] && echo "Error: $DISTRO is not a valid input" && exit 1
 			;;
 		-f)
-			[ -n "$2" ] && DEVICE=$2 shift || usage
+			[ -n "$2" ] && DEVICE=$2 && shift || usage
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
 			;;
 		-o)
-			[ "$2" ] && ARG=$2 shift || usage
+			[ "$2" ] && ARG=$2 && shift || usage
 			cmd=${ARG%%=*}
 			arg=${ARG#*=}
 			# quick syntax check
