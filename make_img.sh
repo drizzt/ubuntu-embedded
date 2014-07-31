@@ -22,14 +22,12 @@
 
 # TODO:
 #
-# -image size selection
 # -ppa support
 # -arch support (armhf vs arm64)
 # -vexpress support
 # -additional pkgs support
 # -kernel and bootloader selection support
 # -autoresize at first boot
-# -user/pwd support
 # -check if we can slim uenv.txt some more
 # -kernel installation on old installs? flash-kernel execution looks for
 #  /lib/firmware/...
