@@ -292,14 +292,13 @@ Other options:
 -f  <device>  device installation target
 
 Misc "catch-all" option:
--o <stack,user,passwd,imgsize> set the correspective value
-
-where:
+-o <opt=value> where:
 
 stack:			release used for the enablement stack (kernel, bootloader and flask-kernel)
 size:			size of the image file * 1MB (e.g. 1024 = 1G)
 user:			credentials of the user created on the target image
 passwd:			same as above, but for the password here
+rootfs			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
 EOF
 	exit 1
 }
@@ -331,6 +330,7 @@ while [ $# -gt 0 ]; do
 			#echo "cmd: $cmd arg: ${arg:-null}"
 			case "$cmd" in
 				"passwd") PASSWD="$arg" ;;
+				"rootfs") UROOTFS="$arg" ;;
 				"size") IMGSIZE=`numfmt --from=none $arg` ;;
 				"stack")
 					[ -z $(ugetcod "$arg") ] && echo "Error: $arg is not a valid realease" && exit 1
@@ -374,6 +374,7 @@ BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 # final environment setup
 trap cleanup 0 1 2 3 9 15
 DEVICE=${DEVICE:-disk-$(date +%F)-$DISTRO-$BOARD.img}
+ROOTFS="${UROOTFS:-http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz}"
 ROOTFSDIR=$(mktemp -d /tmp/embedded-rootfs.XXXXXX)
 BOOTDIR=$(mktemp -d /tmp/embedded-boot.XXXXXX)
 FSTABFILE=$(mktemp /tmp/embedded-fstab.XXXXXX)
@@ -389,6 +390,7 @@ echo $MOUNTFILE
 echo $UBOOTPREF
 echo $BOOTLOADERS
 echo $DEVICE
+echo $ROOTFS
 echo $LAYOUT
 echo "------------"
 
@@ -410,8 +412,11 @@ layout_device
 # - install rootfs
 echo "== Init System =="
 mount_dev "${ROOTDEVICE}" "${ROOTFSDIR}"
-CORE="http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz"
-wget -qO- $CORE | tar zxf - -C $ROOTFSDIR
+if [ "${ROOTFS%%:*}" = "http" -o "${ROOTFS%%:*}" = "ftp" ]; then
+	 wget -qO- "${ROOTFS}" | tar zxf - -C "${ROOTFSDIR}"
+else
+	tar zxf "${ROOTFS}" -C "${ROOTFSDIR}"
+fi
 
 # end of init_system_generic()
 
