@@ -305,7 +305,7 @@ Other options:
 -f  <device>  device installation target
 
 Misc "catch-all" option:
--o <opt=value> where:
+-o <opt=value[,opt=value, ...]> where:
 
 stack:			release used for the enablement stack (kernel, bootloader and flask-kernel)
 size:			size of the image file (e.g. 2G, default: 1G)
@@ -335,28 +335,35 @@ while [ $# -gt 0 ]; do
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
 			;;
 		-o)
-			[ "$2" ] && ARG=$2 && shift || usage
-			cmd=${ARG%%=*}
-			arg=${ARG#*=}
-			# quick syntax check
-			[ "$cmd" = "$arg" ] && echo "Error: syntax error for $ARG" && usage
-			#echo "cmd: $cmd arg: ${arg:-null}"
-			case "$cmd" in
-				"passwd") PASSWD="$arg" ;;
-				"rootfs") UROOTFS="$arg" ;;
-				"size")
-					USRIMGSIZE=`numfmt --from=iec --invalid=ignore $arg`
-					! [[ $USRIMGSIZE =~ ^[0-9]+$ ]] && echo "Error: invalid input \"$arg\"" && exit 1
-					;;
-				"stack")
-					[ -z $(ugetcod "$arg") ] && echo "Error: $arg is not a valid realease" && exit 1
-					STACK="$arg"
-					;;
-				"user") USER="$arg" ;;
-				*)
-					echo "Error: $ARG unknown option" && exit 1
-					;;
-			esac
+			[ "$2" ] || usage
+			OIFS=$IFS
+			IFS=','
+			for ARG in $2; do
+				[ -z "${ARG}" ] && echo "Error: syntax error in $ARG" && usage
+				cmd=${ARG%%=*}
+				arg=${ARG#*=}
+				# code below always expect an agument, so enforce it
+				[ -z "$arg" -o "$cmd" = "$arg" ] && echo "Error: syntax error for opt: $ARG" && usage
+				#echo "cmd: $cmd arg: ${arg:-null}"
+				case "$cmd" in
+					"passwd") PASSWD="$arg" ;;
+					"rootfs") UROOTFS="$arg" ;;
+					"size")
+						USRIMGSIZE=`numfmt --from=iec --invalid=ignore $arg`
+						! [[ $USRIMGSIZE =~ ^[0-9]+$ ]] && echo "Error: invalid input \"$arg\"" && exit 1
+						;;
+					"stack")
+						[ -z $(ugetcod "$arg") ] && echo "Error: $arg is not a valid realease" && exit 1
+						STACK="$arg"
+						;;
+					"user") USER="$arg" ;;
+					*)
+						echo "Error: $ARG unknown option" && exit 1
+						;;
+				esac
+			done
+			IFS=$OIFS
+			shift
 			;;
 		*|h)
 			usage
@@ -402,6 +409,7 @@ MOUNTFILE=$(mktemp /tmp/embedded-mount.XXXXXX)
 echo "Summary: "
 echo $BOARD
 echo $DISTRO
+echo $STACK
 echo $BOOTDIR
 echo $ROOTFSDIR
 echo $FSTABFILE
@@ -412,6 +420,8 @@ echo $DEVICE
 echo $ROOTFS
 echo $LAYOUT
 echo $IMGSIZE
+echo $USER
+echo $PASSWD
 echo "------------"
 
 # end of setup_env_generic()
