@@ -22,15 +22,28 @@
 
 # TODO:
 #
-# -ppa support
-# -arch support (armhf vs arm64)
-# -vexpress support
-# -additional pkgs support
-# -kernel and bootloader selection support
-# -autoresize at first boot
-# -check if we can slim uenv.txt some more
-# -kernel installation on old installs? flash-kernel execution looks for
-#  /lib/firmware/...
+# - ppa support
+# - additional pkgs support
+# - kernel and bootloader selection support
+# - deboostrap vs ubuntu core support
+# - arch support (armhf vs arm64)
+# - autoresize at first boot
+#
+# boards support:
+# - freescale imx6
+# - solidrun cubox
+# - exynos arndale
+# - vexpress support
+# - bananapi?
+# - android device support? (ac100, chromebook, tablets, etc)
+#
+# stuff to check:
+# - check vars quoting&style
+# - reduce root usage if possible
+# - move fs/device creation from top to bottom of script
+# - check if we can slim uenv.txt some more
+# - kernel installation on old installs? flash-kernel execution looks for
+#   /lib/firmware/...
 
 set -e
 
