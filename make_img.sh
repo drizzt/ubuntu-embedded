@@ -50,7 +50,7 @@ set -e
 export LC_ALL=C
 DB="ubuntu.db"
 KERNELCONF="kernel-img.conf"
-IMGSIZE="1024"
+DEFIMGSIZE="1073741824" # 1GB
 BOOTSIZE="32"
 USER="ubuntu"
 PASSWD="ubuntu"
@@ -204,7 +204,7 @@ layout_device()
 	local ROOTPART=
 	if [ ! -b "$DEVICE" ]; then
 		rm -f "$DEVICE"
-		dd if=/dev/zero of="$DEVICE" bs=1M count="$IMGSIZE"
+		dd if=/dev/zero of="$DEVICE" bs="${IMGSIZE}" count=1
 	fi
 
 	# 1) create partitions
@@ -308,7 +308,7 @@ Misc "catch-all" option:
 -o <opt=value> where:
 
 stack:			release used for the enablement stack (kernel, bootloader and flask-kernel)
-size:			size of the image file * 1MB (e.g. 1024 = 1G)
+size:			size of the image file (e.g. 2G, default: 1G)
 user:			credentials of the user created on the target image
 passwd:			same as above, but for the password here
 rootfs			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
@@ -339,12 +339,15 @@ while [ $# -gt 0 ]; do
 			cmd=${ARG%%=*}
 			arg=${ARG#*=}
 			# quick syntax check
-			[ "$cmd" = "$arg" ] && echo "Error: syntax error for $ARG" && exit 1
+			[ "$cmd" = "$arg" ] && echo "Error: syntax error for $ARG" && usage
 			#echo "cmd: $cmd arg: ${arg:-null}"
 			case "$cmd" in
 				"passwd") PASSWD="$arg" ;;
 				"rootfs") UROOTFS="$arg" ;;
-				"size") IMGSIZE=`numfmt --from=none $arg` ;;
+				"size")
+					USRIMGSIZE=`numfmt --from=iec --invalid=ignore $arg`
+					! [[ $USRIMGSIZE =~ ^[0-9]+$ ]] && echo "Error: invalid input \"$arg\"" && exit 1
+					;;
 				"stack")
 					[ -z $(ugetcod "$arg") ] && echo "Error: $arg is not a valid realease" && exit 1
 					STACK="$arg"
@@ -384,6 +387,8 @@ BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 # sanitize input params
 [ "${DISTRO}" = "14.10" ] && echo "Error: 14.10 is only valid as a stack= opt fow now." && exit 1
 [ "$DISTRO" = "$STACK" ] && STACK=""
+IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
+[ "${IMGSIZE}" -lt "${DEFIMGSIZE}" ] && echo "Error: size can't be smaller than `numfmt --from=auto --to=iec ${DEFIMGSIZE}`" && exit 1
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
@@ -406,6 +411,7 @@ echo $BOOTLOADERS
 echo $DEVICE
 echo $ROOTFS
 echo $LAYOUT
+echo $IMGSIZE
 echo "------------"
 
 # end of setup_env_generic()
