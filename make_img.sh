@@ -286,7 +286,7 @@ usage: $(basename $0) -b \$BOARD -d \$DISTRO [options...]
 
 Available values for:
 \$BOARD: $BOARDS
-\$DISTRO: $(ugetrels)
+\$DISTRO: 14.04
 
 Other options:
 -f  <device>  device installation target
@@ -369,6 +369,7 @@ UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 
 # sanitize input params
+[ "${DISTRO}" = "14.10" ] && echo "Error: 14.10 is only valid as a stack= opt fow now." && exit 1
 [ "$DISTRO" = "$STACK" ] && STACK=""
 
 # final environment setup
