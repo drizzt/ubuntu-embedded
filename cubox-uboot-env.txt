@@ -1,6 +1,0 @@
-Turn on the cubox, stop the boot process and type in:
-
-env default -a
-setenv mmcroot "/dev/mmcblk0p1 rootwait rw"
-saveenv
-boot

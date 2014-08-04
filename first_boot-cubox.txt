@@ -1,0 +1,13 @@
+For your first boot (and only for it), to complete the installation process,
+follow these instructions:
+
+insert the sd card in your cubox, turn it on, stop the boot
+process when you see the countdown message and type in:
+
+env default -a
+setenv mmcroot "/dev/mmcblk0p1 rootwait rw"
+saveenv
+boot
+
+That's it, if your board is booting now, you successfully completed the
+installation of Ubuntu for your Cubox, enjoy it!
