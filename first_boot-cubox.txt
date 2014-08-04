@@ -1,3 +1,5 @@
+==== IMPORTANT MESSAGE, PLEASE READ IT ====
+
 For your first boot (and only for it), to complete the installation process,
 follow these instructions:
 

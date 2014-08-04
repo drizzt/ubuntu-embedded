@@ -33,6 +33,7 @@ machine: Globalscale Mirabox
 #layout: /boot,ext2,256M /,ext4,FILL
 layout: BOOTDIR,vfat,256M /,ext4,FILL
 serial: ttyS0
+firstbootmsg: first_boot-mirabox.txt
 
 board: cubox
 machine: SolidRun i.MX 6Quad/Dual/DualLite/Solo CuBox-i Board
@@ -40,6 +41,7 @@ layout: /,ext4,FILL
 uboot-prefix: mx6_cubox-i
 bootloaders: SPL>1 u-boot.img>42
 serial: ttymxc0
+firstbootmsg: first_boot-cubox.txt
 
 # XXX stub, not working yet
 board: arndale

@@ -1,3 +1,5 @@
+==== IMPORTANT MESSAGE, PLEASE READ IT ====
+
 Turn on the Globalscale Mirabox, stop the boot process and type in:
 
 setenv loadaddr 0x6400000

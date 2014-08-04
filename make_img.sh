@@ -404,6 +404,7 @@ SERIAL=$(get_field "$BOARD" "serial") || true
 UENV=$(get_field "$BOARD" "uenv") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
+FBMSG=$(get_field "$BOARD" "firstbootmsg") || true
 
 # sanitize input params
 [ "${DISTRO}" = "14.10" ] && echo "Error: 14.10 is only valid as a stack= opt fow now." && exit 1
@@ -522,3 +523,5 @@ do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 # - install bootloaders
 echo "== Install Bootloader =="
 bootloader_phase
+
+[ "${FBMSG}" ] && echo -e "\n\n\n\n" && cat "${FBMSG}"
