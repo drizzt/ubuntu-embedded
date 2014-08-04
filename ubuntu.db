@@ -36,10 +36,9 @@ serial: ttyS0
 
 board: cubox
 machine: SolidRun i.MX 6Quad/Dual/DualLite/Solo CuBox-i Board
-layout: /boot,ext2,256M /,ext4,FILL
-uenv: cubox
+layout: /,ext4,FILL
 uboot-prefix: mx6_cubox-i
-bootloaders: SPL:1 u-boot.img:42
+bootloaders: SPL>1 u-boot.img>42
 serial: ttymxc0
 
 # XXX stub, not working yet

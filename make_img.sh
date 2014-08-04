@@ -268,23 +268,36 @@ layout_device()
 	echo "ROOTDEVICE: $ROOTDEVICE BOOTDEVICE: ${BOOTDEVICE:-null}"
 }
 
-do_bootloader()
+
+bootloader_phase()
 {
-	mount_dev "${BOOTDEVICE}" "${BOOTDIR}"
-	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $BOOTDIR/uEnv.txt
+	# 1) if there's a $BOOTDEVICE defined, mount it
+	# 	a) if there's a uEnv.txt in /boot, move it to $BOOTDIR
+
+	if [ "${BOOTDEVICE}" ]; then
+		mount_dev "${BOOTDEVICE}" "${BOOTDIR}"
+		[ -f "${ROOTFSDIR}/boot/uEnv.txt" ] && mv "${ROOTFSDIR}/boot/uEnv.txt" $BOOTDIR
+	fi
+
 	if [ "${BOOTLOADERS}" ]; then
-		local SRC="$ROOTFSDIR"
-		local DEST="$BOOTDIR"
-		local PREFIX="usr/lib/u-boot/$UBOOTPREF"
-		
 		do_chroot $ROOTFSDIR apt-get -y install u-boot
+
+		local PREFIX="$ROOTFSDIR/usr/lib/u-boot/$UBOOTPREF"
+		local DEST=$([ $BOOTDEVICE ] && echo "$BOOTDIR" || echo "/dev/${LOOP}")
 		for i in $BOOTLOADERS; do
 			a="$(echo $i | cut -f1 -d'>')"
 			b="$(echo $i | cut -f2 -d'>')"
-			cp $SRC/$PREFIX/$a $DEST/$b
+			if [ "${BOOTDEVICE}" ]; then
+				cp $PREFIX/$a $DEST/$b
+			else
+				dd if=$PREFIX/$a of=${DEST} bs=1K seek=$b
+			fi
 		done
-	else
-		# no bootloaders to be installed, just copy uImage/uInitrd to BOOTDIR
+	fi
+
+	# XXX - mirabox's bad uboot workaround
+	# no bootloaders defined, just copy uImage/uInitrd to BOOTDIR
+	if [ "${BOOTDEVICE}" -a -z "${BOOTLOADERS}" ]; then
 		cp ${ROOTFSDIR}/boot/uImage ${ROOTFSDIR}/boot/uInitrd ${BOOTDIR}
 	fi
 }
@@ -500,11 +513,12 @@ done
 # XXX pin flash-kernel so it won't be updated
 do_chroot $ROOTFSDIR  /bin/sh -c 'echo "flash-kernel hold" | dpkg --set-selections'
 do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
+[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 
 # end of install_pkgs_generic()
 
-# install_bootloader_vfat()
+# install_bootloader()
 # - copy bootscript
 # - install bootloaders
 echo "== Install Bootloader =="
-[ "${BOOTDEVICE}" ] && do_bootloader
+bootloader_phase
