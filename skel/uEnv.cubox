@@ -1,0 +1,2 @@
+bootfile=/boot/uImage
+mmcargs=setenv bootargs root=/dev/mmcblk0p1 rootwait rw console=ttymxc0,115200

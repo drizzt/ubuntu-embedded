@@ -271,7 +271,7 @@ layout_device()
 do_bootloader()
 {
 	mount_dev "${BOOTDEVICE}" "${BOOTDIR}"
-	cp skel/uEnv.txt $BOOTDIR
+	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $BOOTDIR/uEnv.txt
 	if [ "${BOOTLOADERS}" ]; then
 		local SRC="$ROOTFSDIR"
 		local DEST="$BOOTDIR"
@@ -388,6 +388,7 @@ MKPASSWD=$(which mkpasswd) || true
 
 # optional parameters
 SERIAL=$(get_field "$BOARD" "serial") || true
+UENV=$(get_field "$BOARD" "uenv") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 

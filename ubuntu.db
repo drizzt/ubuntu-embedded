@@ -1,6 +1,7 @@
 board: beaglexm
 machine: OMAP3 Beagle Board
 layout: BOOTDIR,vfat,256M /,ext4,FILL
+uenv: generic
 uboot-prefix: omap3_beagle
 bootloaders: MLO>MLO u-boot.bin>u-boot.img
 serial: ttyO2
@@ -8,6 +9,7 @@ serial: ttyO2
 board: panda
 machine: OMAP4 Panda board
 layout: BOOTDIR,vfat,256M /,ext4,FILL
+uenv: generic
 uboot-prefix: omap4_panda
 bootloaders: MLO>MLO u-boot.bin>u-boot.img
 serial: ttyO2
@@ -15,6 +17,7 @@ serial: ttyO2
 board: beaglebone
 machine: TI AM335x BeagleBone
 layout: BOOTDIR,vfat,256M /,ext4,FILL
+uenv: generic
 uboot-prefix: am335x_boneblack
 bootloaders: MLO>MLO u-boot.img>u-boot.img
 serial: ttyO0
@@ -32,6 +35,11 @@ layout: BOOTDIR,vfat,256M /,ext4,FILL
 serial: ttyS0
 
 board: cubox
+machine: SolidRun i.MX 6Quad/Dual/DualLite/Solo CuBox-i Board
+layout: /boot,ext2,256M /,ext4,FILL
+uenv: cubox
+uboot-prefix: mx6_cubox-i
+bootloaders: SPL:1 u-boot.img:42
 serial: ttymxc0
 
 # XXX stub, not working yet
