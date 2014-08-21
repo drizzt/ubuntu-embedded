@@ -61,6 +61,7 @@ BOOTLOADERS=
 UBOTPREF=
 BOOTDEVICE=
 ROOTDEVICE=
+BOOTLOADERDEVICE=
 
 rm -f build.log && touch build.log
 tail -f build.log &
@@ -238,8 +239,10 @@ layout_device()
 		$KPARTX -a "$DEVICE"
 		LOOP=$(losetup -a | grep $DEVICE | cut -f1 -d: | cut -f3 -d/)
 		PHYSDEVICE="/dev/mapper/${LOOP}p"
+		BOOTLOADERDEVICE="/dev/${LOOP}"
 	else
 		PHYSDEVICE="${DEVICE}"
+		BOOTLOADERDEVICE="${DEVICE}"
 	fi
 	echo "2) Making filesystems..."
 	PART=0
@@ -279,14 +282,26 @@ bootloader_phase()
 		[ -f "${ROOTFSDIR}/boot/uEnv.txt" ] && mv "${ROOTFSDIR}/boot/uEnv.txt" $BOOTDIR
 	fi
 
+	# 2) if there's any bootloader defined
+	# 	a) if there's a bootdir partition, copy/rename the bootloader to that partition
+	# 	b) else, dd the corresponding bootloader file at $bKB from the beginning of
+	#		the device
+
 	if [ "${BOOTLOADERS}" ]; then
 		do_chroot $ROOTFSDIR apt-get -y install u-boot
 
 		local PREFIX="$ROOTFSDIR/usr/lib/u-boot/$UBOOTPREF"
-		local DEST=$([ $BOOTDEVICE ] && echo "$BOOTDIR" || echo "/dev/${LOOP}")
+		local DEST=""
+		if [ $BOOTDEVICE ] ; then
+			DEST="$BOOTDIR"
+			DELIMITER='>'
+		else
+			DEST="$BOOTLOADERDEVICE"
+			DELIMITER=':'
+		fi
 		for i in $BOOTLOADERS; do
-			a="$(echo $i | cut -f1 -d'>')"
-			b="$(echo $i | cut -f2 -d'>')"
+			a="$(echo $i | cut -f1 -d$DELIMITER)"
+			b="$(echo $i | cut -f2 -d$DELIMITER)"
 			if [ "${BOOTDEVICE}" ]; then
 				cp $PREFIX/$a $DEST/$b
 			else
