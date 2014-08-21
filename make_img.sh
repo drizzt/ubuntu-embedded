@@ -203,7 +203,11 @@ layout_device()
 	echo "== Layout device =="
 	local BOOTPART=
 	local ROOTPART=
-	if [ ! -b "$DEVICE" ]; then
+	if [ -b "$DEVICE" ]; then
+		# wipe partitions table&c
+		dd if=/dev/zero of=${DEVICE} bs=1M count=1
+	else
+		# create a new img file
 		rm -f "$DEVICE"
 		dd if=/dev/zero of="$DEVICE" bs="${IMGSIZE}" count=1
 	fi
