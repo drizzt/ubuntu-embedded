@@ -309,7 +309,7 @@ bootloader_phase()
 			if [ "${BOOTDEVICE}" ]; then
 				cp $PREFIX/$a $DEST/$b
 			else
-				dd if=$PREFIX/$a of=${DEST} seek=$b
+				dd if=$PREFIX/$a of=${DEST} bs=512 seek=$b
 			fi
 		done
 	fi
