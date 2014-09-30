@@ -292,9 +292,13 @@ bootloader_phase()
 	#		the device
 
 	if [ "${BOOTLOADERS}" ]; then
-		do_chroot $ROOTFSDIR apt-get -y install u-boot
 
-		local PREFIX="$ROOTFSDIR/usr/lib/u-boot/$UBOOTPREF"
+		if [ "${UBOOTPREF}" ]; then
+			do_chroot $ROOTFSDIR apt-get -y install u-boot
+			local PREFIX="$ROOTFSDIR/usr/lib/u-boot/$UBOOTPREF"
+		else
+			local PREFIX="$BOARD/bootloaders"
+		fi
 		local DEST=""
 		if [ $BOOTDEVICE ] ; then
 			DEST="$BOOTDIR"
