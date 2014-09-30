@@ -288,7 +288,7 @@ bootloader_phase()
 
 	# 2) if there's any bootloader defined
 	# 	a) if there's a bootdir partition, copy/rename the bootloader to that partition
-	# 	b) else, dd the corresponding bootloader file at $bKB from the beginning of
+	# 	b) else, dd the corresponding bootloader file at $b blocks from the beginning of
 	#		the device
 
 	if [ "${BOOTLOADERS}" ]; then
@@ -309,7 +309,7 @@ bootloader_phase()
 			if [ "${BOOTDEVICE}" ]; then
 				cp $PREFIX/$a $DEST/$b
 			else
-				dd if=$PREFIX/$a of=${DEST} bs=1K seek=$b
+				dd if=$PREFIX/$a of=${DEST} seek=$b
 			fi
 		done
 	fi
