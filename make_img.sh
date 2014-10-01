@@ -410,6 +410,7 @@ done
 
 # mandatory checks
 [ -z "$BOARD" -o -z "$DISTRO" ] && usage
+# XXX check if $BOARD is known
 MACHINE=$(get_field "$BOARD" "machine") || true
 [ -z "$MACHINE" ] && echo "Error: unknown machine string" && exit 1
 LAYOUT=$(get_field "$BOARD" "layout") || true
