@@ -1,0 +1,14 @@
+==== IMPORTANT MESSAGE, PLEASE READ IT ====
+
+Turn on the board, stop the boot process and type in:
+
+setenv bootargs_ubuntu 'setenv bootargs console=ttySAC2,115200n8 root=/dev/mmcblk1p1 rw rootwait debug earlyprintk'
+setenv loadaddr '0x40007000'
+setenv initrdaddr '0x41000000'
+setenv loadimage 'ext2load mmc 1:1 ${loadaddr} /boot/uImage'
+setenv loadinitrd 'ext2load mmc 1:1 ${initrdaddr} /boot/uInitrd'
+setenv bootcmd_ubuntu 'run loadimage; run loadinitrd; run bootargs_ubuntu; bootm ${loadaddr} ${initrdaddr}'
+setenv bootcmd 'run bootcmd_ubuntu'
+saveenv
+reset
+
