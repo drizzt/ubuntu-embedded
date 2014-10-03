@@ -46,7 +46,7 @@ firstbootmsg: first_boot-cubox.txt
 # XXX not working yet
 board: arndale5250
 machine: Insignal Arndale evaluation board based on EXYNOS5250
-layout: /,ext4,FILL
+layout: /boot,ext2,256M /,ext4,FILL
 serial: ttySAC2
-bootloaders: arndale-bl1.bin:1 arndale-spl.bin:17 u-boot-dtb.bin:49
+bootloaders: arndale-bl1.bin:1 smdk5250-spl.bin:17 u-boot.bin:49
 firstbootmsg: first_boot-arndale5250.txt
