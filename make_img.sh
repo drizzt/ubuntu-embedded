@@ -69,7 +69,7 @@ TAILPID=$!
 
 exec 3>&1 4>&2 >build.log 2>&1
 
-ARRAY=("14.04:trusty" "14.10:utopic 15.04:vivid")
+ARRAY=("14.04:trusty" "14.10:utopic" "15.04:vivid")
 
 ubuntuversion() {
 	local CMD="$1"
