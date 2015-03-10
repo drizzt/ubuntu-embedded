@@ -8,8 +8,8 @@
 # debug - XXX not appended
 #optargs=debug earlyprintk
 
-loadaddr=0x80000000
-initrdaddr=0x82000000
+loadaddr=0x82000000
+initrdaddr=0x88000000
 
 # vmlinuz
 bootpart=0:2
