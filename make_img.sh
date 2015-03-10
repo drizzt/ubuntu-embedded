@@ -297,7 +297,7 @@ bootloader_phase()
 			do_chroot $ROOTFSDIR apt-get -y install u-boot
 			local PREFIX="$ROOTFSDIR/usr/lib/u-boot/$UBOOTPREF"
 		else
-			local PREFIX="$BOARD/bootloaders"
+			local PREFIX="boards/$BOARD/bootloaders"
 		fi
 		local DEST=""
 		if [ $BOOTDEVICE ] ; then
