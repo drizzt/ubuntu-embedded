@@ -48,7 +48,7 @@
 set -e
 
 export LC_ALL=C
-DB="ubuntu.db"
+DB="boards.db"
 KERNELCONF="kernel-img.conf"
 DEFIMGSIZE="1073741824" # 1GB
 BOOTSIZE="32"
