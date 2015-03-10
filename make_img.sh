@@ -172,12 +172,12 @@ do_chroot()
 		local CMD="$2"
 		shift 2
 
-		chroot $ROOT mount -t proc proc /proc
-		chroot $ROOT mount -t sysfs sys /sys
+		mount --bind /proc $ROOT/proc
+		mount --bind /sys $ROOT/sys
 		#echo "cmd: $CMD args: $@"
 		chroot $ROOT $CMD "$@"
-		chroot $ROOT umount /sys
-		chroot $ROOT umount /proc
+		umount $ROOT/sys
+		umount $ROOT/proc
 }
 
 cleanup()
@@ -222,11 +222,11 @@ layout_device()
 		local FS=`echo "$i" | cut -f2 -d","`
 		local SIZE=`echo "$i" | cut -f3 -d","`
 		echo "mpoint: $MPOINT fs: $FS size: $SIZE"
-		[ $SIZE = "FILL" ] && SIZE=""
+		[ $SIZE = "FILL" ] && SIZE="" || SIZE="+$SIZE"
 		[ $MPOINT = "BOOTDIR" ] && BOOTPART=$PART
 		[ $MPOINT = "/" ] && ROOTPART=$PART
 		echo "mpoint: $MPOINT fs: $FS size: $SIZE"
-		/bin/echo -e "n\np\n\n\n+${SIZE}\nw" | fdisk "$DEVICE"
+		/bin/echo -e "n\np\n\n\n${SIZE}\nw" | fdisk "$DEVICE"
 		if [ $FS = "vfat" ]; then 
 			if [ $PART = "1" ]; then
 				/bin/echo -e "t\nc\nw" | fdisk "$DEVICE"
