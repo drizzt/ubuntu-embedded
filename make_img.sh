@@ -291,7 +291,11 @@ bootloader_phase()
 	# 	b) else, dd the corresponding bootloader file at $b blocks from the beginning of
 	#		the device
 
-	if [ "${BOOTLOADERS}" ]; then
+	# XXX shortcut for: copy all the bootloader files from
+	# boards/$BOARD/bootloaders to $BOOTDIR
+	if [ "${BOOTLOADERS}" = "ALL" ]; then
+		cp -R boards/$BOARD/bootloaders/* $BOOTDIR/
+	elif [ "${BOOTLOADERS}" ]; then
 
 		if [ "${UBOOTPREF}" ]; then
 			do_chroot $ROOTFSDIR apt-get -y install u-boot
