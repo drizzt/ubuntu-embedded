@@ -428,7 +428,6 @@ SERIAL=$(get_field "$BOARD" "serial") || true
 UENV=$(get_field "$BOARD" "uenv") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
-FBMSG=$(get_field "$BOARD" "firstbootmsg") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.04" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
@@ -548,4 +547,4 @@ do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 echo "== Install Bootloader =="
 bootloader_phase
 
-[ "${FBMSG}" ] && echo -e "\n\n\n\n" && cat "${FBMSG}"
+[ -e "boards/$BOARD/first_boot.txt" ] && echo -e "\n\n\n\n" && cat "boards/$BOARD/first_boot.txt"

@@ -33,7 +33,6 @@ machine: Globalscale Mirabox
 #layout: /boot,ext2,256M /,ext4,FILL
 layout: BOOTDIR,vfat,256M /,ext4,FILL
 serial: ttyS0
-firstbootmsg: first_boot-mirabox.txt
 
 board: cubox
 machine: SolidRun i.MX 6Quad/Dual/DualLite/Solo CuBox-i Board
@@ -41,12 +40,10 @@ layout: /,ext4,FILL
 uboot-prefix: mx6_cubox-i
 bootloaders: SPL:2 u-boot.img:84
 serial: ttymxc0
-firstbootmsg: first_boot-cubox.txt
 
 # XXX not working yet
 board: arndale5250
 machine: Insignal Arndale evaluation board based on EXYNOS5250
 layout: /boot,ext2,256M /,ext4,FILL
-serial: ttySAC2
 bootloaders: arndale-bl1.bin:1 smdk5250-spl.bin:17 u-boot.bin:49
-firstbootmsg: first_boot-arndale5250.txt
+serial: ttySAC2
