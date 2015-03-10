@@ -69,7 +69,7 @@ TAILPID=$!
 
 exec 3>&1 4>&2 >build.log 2>&1
 
-ARRAY=("14.04:trusty" "14.10:utopic")
+ARRAY=("14.04:trusty" "14.10:utopic 15.04:vivid")
 
 ubuntuversion() {
 	local CMD="$1"
@@ -431,7 +431,7 @@ BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 FBMSG=$(get_field "$BOARD" "firstbootmsg") || true
 
 # sanitize input params
-[ "${DISTRO}" = "14.10" ] && echo "Error: 14.10 is only valid as a stack= opt fow now." && exit 1
+[ "${DISTRO}" = "15.04" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
 [ "$DISTRO" = "$STACK" ] && STACK=""
 IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 [ "${IMGSIZE}" -lt "${DEFIMGSIZE}" ] && echo "Error: size can't be smaller than `numfmt --from=auto --to=iec ${DEFIMGSIZE}`" && exit 1
