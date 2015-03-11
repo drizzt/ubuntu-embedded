@@ -192,7 +192,7 @@ cleanup()
 			umount $line >/dev/null 2>&1 || true
 		done
 		$KPARTX -d "$DEVICE" >/dev/null 2>&1  || true
-		rm -f "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
+		rmdir "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
 	fi
 	rm -f $FSTABFILE
 	rm -f $MOUNTFILE
@@ -443,10 +443,10 @@ IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 trap cleanup 0 1 2 3 9 15
 DEVICE=${DEVICE:-disk-$(date +%F)-$DISTRO-$BOARD.img}
 ROOTFS="${UROOTFS:-http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz}"
-ROOTFSDIR=$(mktemp -d /tmp/embedded-rootfs.XXXXXX)
-BOOTDIR=$(mktemp -d /tmp/embedded-boot.XXXXXX)
-FSTABFILE=$(mktemp /tmp/embedded-fstab.XXXXXX)
-MOUNTFILE=$(mktemp /tmp/embedded-mount.XXXXXX)
+ROOTFSDIR=$(mktemp -d build/embedded-rootfs.XXXXXX)
+BOOTDIR=$(mktemp -d build/embedded-boot.XXXXXX)
+FSTABFILE=$(mktemp build/embedded-fstab.XXXXXX)
+MOUNTFILE=$(mktemp build/embedded-mount.XXXXXX)
 
 echo "Summary: "
 echo $BOARD
