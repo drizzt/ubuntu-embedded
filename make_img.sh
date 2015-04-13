@@ -432,6 +432,7 @@ SERIAL=$(get_field "$BOARD" "serial") || true
 UENV=$(get_field "$BOARD" "uenv") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
+PPA=$(get_field "$BOARD" "ppa") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.04" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
@@ -514,6 +515,7 @@ do_chroot $ROOTFSDIR adduser $USER adm
 do_chroot $ROOTFSDIR adduser $USER sudo
 cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
+[ -n ${PPA} ] && add-apt-repository -y ${PPA}
 
 # end of setup_system_generic()
 
