@@ -433,6 +433,7 @@ UENV=$(get_field "$BOARD" "uenv") || true
 UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 PPA=$(get_field "$BOARD" "ppa") || true
+KERNEL=$(get_field "$BOARD" "kernel") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.04" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
@@ -442,6 +443,7 @@ IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
+KERNEL=${KERNEL:-linux-image-generic}
 DEVICE=${DEVICE:-disk-$(date +%F)-$DISTRO-$BOARD.img}
 ROOTFS="${UROOTFS:-http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz}"
 ROOTFSDIR=$(mktemp -d build/embedded-rootfs.XXXXXX)
@@ -465,6 +467,7 @@ echo $LAYOUT
 echo $IMGSIZE
 echo $USER
 echo $PASSWD
+echo $KERNEL
 echo "------------"
 
 # end of setup_env_generic()
@@ -534,7 +537,7 @@ do_chroot $ROOTFSDIR apt-get update
 # don't run flash-kernel during installation
 export FLASH_KERNEL_SKIP=1
 cp skel/$KERNELCONF $ROOTFSDIR/etc
-do_chroot $ROOTFSDIR apt-get -y install linux-image-generic u-boot-tools linux-base flash-kernel
+do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} -image-generic u-boot-tools linux-base flash-kernel
 unset FLASH_KERNEL_SKIP
 # custom flash-kernel patches
 for i in fk-patches/*; do
