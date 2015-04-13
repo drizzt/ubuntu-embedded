@@ -537,7 +537,7 @@ do_chroot $ROOTFSDIR apt-get update
 # don't run flash-kernel during installation
 export FLASH_KERNEL_SKIP=1
 cp skel/$KERNELCONF $ROOTFSDIR/etc
-do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} -image-generic u-boot-tools linux-base flash-kernel
+do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} u-boot-tools linux-base flash-kernel
 unset FLASH_KERNEL_SKIP
 # custom flash-kernel patches
 for i in fk-patches/*; do
