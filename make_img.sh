@@ -209,7 +209,7 @@ layout_device()
 	else
 		# create a new img file
 		rm -f "$DEVICE"
-		dd if=/dev/zero of="$DEVICE" bs="${IMGSIZE}" count=1
+		truncate -s ${IMGSIZE} ${DEVICE} 
 	fi
 
 	# 1) create partitions
