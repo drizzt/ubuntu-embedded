@@ -534,7 +534,7 @@ if [ "${STACK}" ]; then
 fi
 do_chroot $ROOTFSDIR apt-get update
 # if specified, add PPA to the image
-if [ -n ${PPA} ]; then
+if [ "${PPA}" ]; then
 	do_chroot $ROOTFSDIR apt-get install -y software-properties-common
 	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
 	do_chroot $ROOTFSDIR apt-get update
