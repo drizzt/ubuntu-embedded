@@ -537,6 +537,7 @@ do_chroot $ROOTFSDIR apt-get update
 if [ -n ${PPA} ]; then
 	do_chroot $ROOTFSDIR apt-get install -y software-properties-common
 	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
+	do_chroot $ROOTFSDIR apt-get update
 fi
 # don't run flash-kernel during installation
 export FLASH_KERNEL_SKIP=1
