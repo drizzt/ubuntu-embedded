@@ -518,7 +518,6 @@ do_chroot $ROOTFSDIR adduser $USER adm
 do_chroot $ROOTFSDIR adduser $USER sudo
 cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
-[ -n ${PPA} ] && add-apt-repository -y ${PPA}
 
 # end of setup_system_generic()
 
@@ -534,6 +533,11 @@ if [ "${STACK}" ]; then
 	sed -e "s/STACK/${SCOD}/g" -e "s/DISTRO/${DCOD}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${SCOD}
 fi
 do_chroot $ROOTFSDIR apt-get update
+# if specified, add PPA to the image
+if [ -n ${PPA} ]; then
+	do_chroot $ROOTFSDIR apt-get install -y software-properties-common
+	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
+fi
 # don't run flash-kernel during installation
 export FLASH_KERNEL_SKIP=1
 cp skel/$KERNELCONF $ROOTFSDIR/etc
