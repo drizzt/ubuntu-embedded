@@ -6,7 +6,7 @@ Tool to create Ubuntu images for embedded systems (mainly arm boards like the Be
 
 To create an Ubuntu image for the Beaglebone Black:
 
-sudo ./make_img.sh -b beaglebone -d 14.04
+sudo ./make_img.sh -b beaglebone -d 14.04 -o stack=14.10
 
 To create an Ubuntu image for the RaspberryPi2:
 
