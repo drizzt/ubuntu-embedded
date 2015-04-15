@@ -12,6 +12,10 @@ To create an Ubuntu image for the RaspberryPi2:
 
 sudo ./make_img.sh -b raspy2 -d 14.04
 
+Serial console: 115200 8N1 - no hardware and software flow control 
+
+Default user / password: ubuntu / ubuntu
+
 See 'boards.db' for an up to date list of supported boards.
 
 Additional options are available through the help section (./make_img.sh -h):
