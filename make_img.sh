@@ -192,10 +192,12 @@ cleanup()
 			umount $line >/dev/null 2>&1 || true
 		done
 		$KPARTX -d "$DEVICE" >/dev/null 2>&1  || true
-		rmdir "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
+		[ -z $KEEP ] && rmdir "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
 	fi
-	rm -f $FSTABFILE
-	rm -f $MOUNTFILE
+	if [ -z $KEEP ]; then
+		rm -f $FSTABFILE
+		rm -f $MOUNTFILE
+	fi
 }
 
 layout_device()
@@ -342,6 +344,7 @@ Available values for:
 
 Other options:
 -f  <device>  device installation target
+-k            don't cleanup after exit
 
 Misc "catch-all" option:
 -o <opt=value[,opt=value, ...]> where:
@@ -372,6 +375,9 @@ while [ $# -gt 0 ]; do
 		-f)
 			[ -n "$2" ] && DEVICE=$2 && shift || usage
 			[ ! -b "$DEVICE" ] && echo "Error: $DEVICE is not a real device" && exit 1
+			;;
+		-k)
+			KEEP=1
 			;;
 		-o)
 			[ "$2" ] || usage
