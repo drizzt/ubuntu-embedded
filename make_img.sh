@@ -330,7 +330,6 @@ bootloader_phase()
 }
 
 BOARDS="$(get_all_fields "board")"
-ARCH="armhf"
 
 usage()
 {
@@ -415,11 +414,17 @@ done
 # mandatory checks
 [ -z "$BOARD" -o -z "$DISTRO" ] && usage
 # XXX check if $BOARD is known
+# XXX check for a supported ARCH?
+ARCH=$(get_field "$BOARD" "arch") || true
 MACHINE=$(get_field "$BOARD" "machine") || true
 [ -z "$MACHINE" ] && echo "Error: unknown machine string" && exit 1
 LAYOUT=$(get_field "$BOARD" "layout") || true
 [ -z "$LAYOUT" ] && echo "Error: unknown media layout" && exit 1
-QEMU=$(which qemu-arm-static) || true
+if [ $ARCH = "armhf" ]; then
+	QEMU=$(which qemu-arm-static) || true
+elif [ $ARCH = "i386" ]; then
+	QEMU=$(which qemu-i386-static) || true
+fi
 [ -z $QEMU ] && echo "Error: install the qemu-user-static package" && exit 1
 KPARTX=$(which kpartx) || true
 [ -z $KPARTX ] && echo "Error: install the kpartx package" && exit 1
