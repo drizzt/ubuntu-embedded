@@ -54,6 +54,7 @@ BOOTSIZE="32"
 USER="ubuntu"
 PASSWD="ubuntu"
 EMBEDDEDPPA="ppa:p-pisati/embedded"
+KEEP=0
 
 BOARD=
 DISTRO=
@@ -192,9 +193,9 @@ cleanup()
 			umount $line >/dev/null 2>&1 || true
 		done
 		$KPARTX -d "$DEVICE" >/dev/null 2>&1  || true
-		[ -z $KEEP ] && rmdir "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
+		[ $KEEP -eq 0 ] && rmdir "$BOOTDIR" "$ROOTFSDIR" >/dev/null 2>&1 || true
 	fi
-	if [ -z $KEEP ]; then
+	if [ $KEEP -eq 0 ]; then
 		rm -f $FSTABFILE
 		rm -f $MOUNTFILE
 	fi
@@ -529,6 +530,7 @@ do_chroot $ROOTFSDIR adduser $USER adm
 do_chroot $ROOTFSDIR adduser $USER sudo
 cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
+cp skel/$KERNELCONF $ROOTFSDIR/etc
 
 # end of setup_system_generic()
 
@@ -555,7 +557,6 @@ if [ "${PPA}" ]; then
 fi
 # don't run flash-kernel during installation
 export FLASH_KERNEL_SKIP=1
-cp skel/$KERNELCONF $ROOTFSDIR/etc
 do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} u-boot-tools linux-base flash-kernel
 unset FLASH_KERNEL_SKIP
 do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
