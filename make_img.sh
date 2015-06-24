@@ -572,7 +572,7 @@ if [ $ARCH = "armhf" ]; then
 fi
 
 # install additional pakgs if specified
-[ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y "$PACKAGES"
+[ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y $PACKAGES
 
 # end of install_pkgs_generic()
 
