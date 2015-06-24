@@ -534,7 +534,7 @@ echo "$BOARD" > $ROOTFSDIR/etc/hostname
 cp skel/$KERNELCONF $ROOTFSDIR/etc
 
 # install per board custom rootfs files if present
-[ -d "boards/$BOARD/rootfs" ] && cp -r "boards/$BOARD/rootfs/*" "$ROOTFSDIR"
+[ -d "boards/$BOARD/rootfs" ] && cp -r boards/$BOARD/rootfs/* "$ROOTFSDIR"
 
 # end of setup_system_generic()
 
