@@ -532,6 +532,9 @@ cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
 cp skel/$KERNELCONF $ROOTFSDIR/etc
 
+# install per board custom rootfs files if present
+[ -d "boards/$BOARD/rootfs" ] && cp -rp "boards/$BOARD/rootfs/*" "$ROOTFSDIR"
+
 # end of setup_system_generic()
 
 # install_pkgs_generic()
