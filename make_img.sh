@@ -446,6 +446,7 @@ UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 PPA=$(get_field "$BOARD" "ppa") || true
 KERNEL=$(get_field "$BOARD" "kernel") || true
+PACKAGES=$(get_field "$BOARD" "packages") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.10" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
@@ -569,6 +570,9 @@ if [ $ARCH = "armhf" ]; then
 	do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 fi
+
+# install additional pakgs if specified
+[ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y "$PACKAGES"
 
 # end of install_pkgs_generic()
 
