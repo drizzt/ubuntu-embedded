@@ -53,5 +53,4 @@ machine: BCM2709
 layout: BOOTDIR,vfat,256M /,ext4,FILL
 bootloaders: ALL
 serial: ttyAMA0
-ppa: ppa:p-pisati/embedded
 kernel: linux-bcm2709
