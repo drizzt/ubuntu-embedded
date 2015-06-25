@@ -559,14 +559,14 @@ if [ "${PPA}" ]; then
 	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
 	do_chroot $ROOTFSDIR apt-get update
 fi
+# don't run flash-kernel during kernel installation
+export FLASH_KERNEL_SKIP=1
 do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} linux-base
+unset FLASH_KERNEL_SKIP
 
 # flash-kernel-specific-bits - XXX shouldn't we do a better check?
 if [ $ARCH = "armhf" ]; then
-	# don't run flash-kernel during installation
-	export FLASH_KERNEL_SKIP=1
 	do_chroot $ROOTFSDIR apt-get -y install u-boot-tools flash-kernel
-	unset FLASH_KERNEL_SKIP
 	do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 fi
