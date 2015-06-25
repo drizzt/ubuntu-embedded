@@ -22,20 +22,19 @@
 
 # TODO:
 #
-# - ppa support
+# - multiple ppa support
 # - additional pkgs support
 # - kernel and bootloader selection support
 # - deboostrap vs ubuntu core support
-# - arch support (armhf vs arm64)
+# - arch support (arm64? amd64? i386?)
 # - autoresize at first boot
+# - vivid support
 #
 # boards support:
-# - freescale imx6
-# - solidrun cubox
-# - exynos arndale
-# - vexpress support
-# - bananapi?
-# - android device support? (ac100, chromebook, tablets, etc)
+# - vanilla i386? qemu-i386?
+# - vexpress support?
+# - android device support?
+# - chomebook device support?
 #
 # stuff to check:
 # - check vars quoting&style
