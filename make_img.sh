@@ -54,6 +54,7 @@ DEFIMGSIZE="1073741824" # 1GB
 BOOTSIZE="32"
 USER="ubuntu"
 PASSWD="ubuntu"
+EMBEDDEDPPA="ppa:p-pisati/embedded"
 
 BOARD=
 DISTRO=
@@ -533,9 +534,12 @@ if [ "${STACK}" ]; then
 	sed -e "s/STACK/${SCOD}/g" -e "s/DISTRO/${DCOD}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${SCOD}
 fi
 do_chroot $ROOTFSDIR apt-get update
-# if specified, add PPA to the image
+# the embedded PPA is mandatory
+do_chroot $ROOTFSDIR apt-get install -y software-properties-common
+do_chroot $ROOTFSDIR add-apt-repository -y ${EMBEDDEDPPA}
+do_chroot $ROOTFSDIR apt-get update
+# if specified, add a 3rd party PPA
 if [ "${PPA}" ]; then
-	do_chroot $ROOTFSDIR apt-get install -y software-properties-common
 	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
 	do_chroot $ROOTFSDIR apt-get update
 fi
@@ -544,12 +548,6 @@ export FLASH_KERNEL_SKIP=1
 cp skel/$KERNELCONF $ROOTFSDIR/etc
 do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} u-boot-tools linux-base flash-kernel
 unset FLASH_KERNEL_SKIP
-# custom flash-kernel patches
-for i in fk-patches/*; do
-	patch -p1 -d $ROOTFSDIR < "$i"
-done
-# XXX pin flash-kernel so it won't be updated
-do_chroot $ROOTFSDIR  /bin/sh -c 'echo "flash-kernel hold" | dpkg --set-selections'
 do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
 [ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 
