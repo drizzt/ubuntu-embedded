@@ -533,6 +533,10 @@ cp skel/interfaces $ROOTFSDIR/etc/network/
 echo "$BOARD" > $ROOTFSDIR/etc/hostname
 cp skel/$KERNELCONF $ROOTFSDIR/etc
 
+# prevent demon from starting inside the chroot
+cp skel/policy-rc.d $ROOTFSDIR/usr/sbin/
+chmod +x $ROOTFSDIR/usr/sbin/policy-rc.d
+
 # install per board custom rootfs files if present
 [ -d "boards/$BOARD/rootfs" ] && cp -rv boards/$BOARD/rootfs/* "$ROOTFSDIR"
 
@@ -583,4 +587,5 @@ echo "== Install Bootloader =="
 # XXX so far, this part is relevant only in case we use uboot
 bootloader_phase
 
+rm $ROOTFSDIR/usr/sbin/policy-rc.d
 [ -e "boards/$BOARD/first_boot.txt" ] && echo -e "\n\n\n\n" && cat "boards/$BOARD/first_boot.txt"
