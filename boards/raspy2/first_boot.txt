@@ -1,0 +1,15 @@
+==== IMPORTANT MESSAGE, PLEASE READ IT ====
+
+The NIC (Network Interface Card) installed on the RaspberryPi2 board doesn't
+have an ethernet MAC address burned in, that means after every reboot you get a
+completely different and random MAC address (and thus, probably, a
+different ip address too).
+So, if you want to set a fixed mac address, stop the board at the uboot prompt,
+and type:
+
+setenv bootargs "$bootargs smsc95xx.macaddr=$MAC"
+saveenv
+boot
+
+where $MAC is a valid ethernet MAC address
+(https://en.wikipedia.org/wiki/MAC_address).
