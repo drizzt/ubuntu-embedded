@@ -44,3 +44,9 @@ kernel=uboot.bin
 #uncomment to overclock the arm. 700 MHz is the default.
 #arm_freq=800
 
+dtparam=i2c_arm=on
+dtparam=i2c_vc=on
+#i2s=on
+#spi=on
+dtparam=act_led_trigger=heartbeat
+dtparam=pwr_led_trigger=mmc0
