@@ -35,8 +35,6 @@
 # - vexpress support?
 # - android device support?
 # - chomebook device support?
-# - raspi2: ./mkknlimg --dtok uboot.bin uboot.bin.ok; fdt addr 0x100;
-# 		fdt get value args /chosen bootargs; printenv args...
 #
 # stuff to check:
 # - check vars quoting&style
