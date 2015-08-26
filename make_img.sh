@@ -69,7 +69,7 @@ TAILPID=$!
 
 exec 3>&1 4>&2 >build.log 2>&1
 
-ARRAY=("14.04:trusty" "14.10:utopic" "15.04:vivid")
+ARRAY=("14.04:trusty" "14.10:utopic" "15.04:vivid" "15.10:wily")
 
 ubuntuversion() {
 	local CMD="$1"
@@ -339,7 +339,7 @@ usage: $(basename $0) -b \$BOARD -d \$DISTRO [options...]
 
 Available values for:
 \$BOARD: $BOARDS
-\$DISTRO: 14.04 14.10
+\$DISTRO: 14.04 14.10 15.04
 
 Other options:
 -f  <device>  device installation target
@@ -436,7 +436,7 @@ PPA=$(get_field "$BOARD" "ppa") || true
 KERNEL=$(get_field "$BOARD" "kernel") || true
 
 # sanitize input params
-[ "${DISTRO}" = "15.04" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
+[ "${DISTRO}" = "15.10" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
 [ "$DISTRO" = "$STACK" ] && STACK=""
 IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 [ "${IMGSIZE}" -lt "${DEFIMGSIZE}" ] && echo "Error: size can't be smaller than `numfmt --from=auto --to=iec ${DEFIMGSIZE}`" && exit 1
