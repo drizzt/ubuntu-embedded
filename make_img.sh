@@ -564,7 +564,7 @@ if [ "${PPA}" ]; then
 fi
 # don't run flash-kernel during kernel installation
 export FLASH_KERNEL_SKIP=1
-do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} linux-base
+do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} linux-base sudo net-tools vim
 unset FLASH_KERNEL_SKIP
 
 # flash-kernel-specific-bits - XXX shouldn't we do a better check?
