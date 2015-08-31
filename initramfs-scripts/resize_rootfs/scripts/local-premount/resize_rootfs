@@ -1,0 +1,93 @@
+#!/bin/sh -e
+
+PREREQ=""
+
+prereqs()
+{
+        echo "$PREREQ"
+}
+
+case $1 in
+# get pre-requisites
+prereqs)
+        prereqs
+        exit 0
+        ;;
+esac
+
+DISK=mmcblk0
+SEP="p"
+
+BOOTPATH=""
+PARTITION=""
+
+# XXX we only handle mmc and sdX disk types ATM
+# XXX if UUID is found, bail out
+[ -z "`grep root=UUID /proc/cmdline`" ] || exit 0
+for arg in $(cat /proc/cmdline)
+do
+    case $arg in
+        root=*)
+            BOOTPATH=${arg#root=}
+            PARTITION=${BOOTPATH#/dev/}
+            case $PARTITION in
+                mmcblk*)
+                    DISK=$(echo ${PARTITION}|sed -e 's/p[0-9]*$//')
+                    ;;
+                sd*)
+                    DISK=$(echo ${PARTITION}|sed -e 's/[0-9]*$//')
+                    SEP=""
+                    ;;
+                *)
+                    echo "E: resize_rootfs can not handle this disk type"
+                    exit 1
+                    ;;
+            esac
+            ;;
+    esac
+done
+
+export ROOTDEV="/dev/${DISK}${SEP}"
+
+# The actual resizing function
+resize_partitions()
+{
+    HEADS=128
+    SPT=32
+    DISKSIZE=`LANG=C /sbin/fdisk -l /dev/${DISK} | grep Disk | awk '{print $5}' | tr -d '\n'`
+    CYLS=$(($DISKSIZE/$HEADS/$SPT/512))
+    sync
+    # Enlarge the rootfs partition to fill the rest of the disk.
+    # Use sfdisk to dump out current layout then feed it back to sfdisk with the size field of
+    # the partition empty, which means as large as possible
+    /sbin/sfdisk -H $HEADS -S $SPT -C $CYLS -uS -d /dev/$DISK |
+    sed '/Id=83/ s/size=.*,/size=,/' |
+    /sbin/sfdisk -H $HEADS -S $SPT -C $CYLS --no-reread -uS -D --force /dev/$DISK
+}
+
+echo "Enlarging root partition ..."
+resize_partitions
+
+# Give some info to the user
+echo "Resizing root filesystem. Please wait, this will take a moment ..."
+
+export ROOTPART=`/sbin/sfdisk -H $HEADS -S $SPT -d /dev/$DISK | grep 'Id=83' | awk '{print $1}'`
+
+echo "Checking filesystem before resizing..."
+/sbin/e2fsck -fy ${ROOTPART} || true
+echo "Resizing, please wait..."
+pass=1
+iter=0
+LANG=C /sbin/resize2fs -p ${ROOTPART} 2>&1 | while read -n 1 input; do
+    char=$(echo $input|sed 's/[)(]//')
+    if [ "${char}" = "X" ];then
+        if [ "${iter}" = "100.0" ];then
+            iter=0
+            pass=$(($pass+1))
+        fi  
+        iter=$(echo $iter+2.5|bc)
+        printf "\rResizing, pass: %i [%3.0f/100]" $pass $iter
+    fi  
+done
+echo "Done resizing."
+

@@ -1,0 +1,194 @@
+#!/bin/sh -e
+
+PREREQ=""
+
+prereqs()
+{
+        echo "$PREREQ"
+}
+
+case $1 in
+# get pre-requisites
+prereqs)
+        prereqs
+        exit 0
+        ;;
+esac
+
+PORT=1234
+DISK=/dev/sda
+SERVER=""
+IMAGE=""
+ROOTFS=""
+KERNEL=""
+USER="ubuntu"
+PASSWD="ubuntu"
+
+
+# XXX shall i do some checks about the env? wait for disk? eth0 ip? etc
+print_info() {
+	# one of the side effect of issuing "ipconfig eth0" is to actually bring up eth0
+	# and get the ip via dhcp
+	local MAC=`ipconfig eth0 | grep "hardware address" | awk '{print $5}' | tr -d ' \n'`
+	local IP=`ipconfig eth0 | grep "address:" | awk '{print $2}' | tr -d '\n'`
+	BAN="==== BOARD INFO ===="
+	EBAN="===================="
+
+	echo -e "\n\n"
+	echo $BAN
+	echo
+	echo "MAC: $MAC"
+	echo "IP: $IP"
+	echo "PORT: $PORT"
+	echo
+	echo $EBAN
+}
+
+get_msg_and_parse() {
+	while [ true ]; do
+		# reset vars
+		SERVER=""
+		IMAGE=""
+		ROOTFS=""
+		KERNEL=""
+
+		# wait for provisioning setup msg and parse it
+		MSG=`nc -l $PORT`
+		echo -e "MSG: $MSG\n"
+		for token in $MSG; do
+			case $token in
+				SERVER*)
+					SERVER=${token#SERVER=}
+					;;
+				IMAGE*)
+					IMAGE=${token#IMAGE=}
+					;;
+				ROOTFS*)
+					ROOTFS=${token#ROOTFS=}
+					;;
+				KERNEL*)
+					KERNEL=${token#KERNEL=}
+					;;
+				*)
+					echo "E: $token unknown argument"
+					;;
+			esac
+		done # end of tokenization loop
+
+		echo "SERVER: $SERVER"
+		echo "IMAGE: $IMAGE"
+		echo "ROOTFS: $ROOTFS KERNEL: $KERNEL"
+		echo ""
+
+		# basic sanity checks
+		[ -z "$SERVER" ] && echo "E: SERVER can't be NULL" && continue
+		[ -z "$IMAGE" -a -z "$ROOTFS" ] && echo "E: IMAGE and ROOTFS can't be both NULL" && continue
+		[ "$IMAGE" -a "$ROOTFS" ] && echo "E: IMAGE and ROOTFS can't be both set" && continue
+		[ "$IMAGE" -a "$KERNEL" ] && echo "E: IMAGE and KERNEL can't be both set" && continue
+		[ "$ROOTFS" -a -z "$KERNEL" ] && echo "E: KERNEL can't be NULL" && continue
+
+		echo "SERVER: $SERVER"
+		echo "IMAGE: $IMAGE"
+		echo "ROOTFS: $ROOTFS KERNEL: $KERNEL"
+		echo ""
+		
+		# good, ready to start provisioning
+		break
+	done
+}
+
+do_chroot()
+{
+                local ROOT="$1"
+                local CMD="$2"
+                shift 2
+
+                mount --bind /proc $ROOT/proc
+                mount --bind /sys $ROOT/sys
+                #echo "cmd: $CMD args: $@"
+                chroot $ROOT $CMD "$@"
+                umount $ROOT/sys
+                umount $ROOT/proc
+}
+
+image_provisioning() {
+	echo -e "\nHello! image_provisioning here...\n"
+	wget -O - "$SERVER/$IMAGE" | dd of="$DISK"
+	sync
+	echo "Image provisioning done, rebooting into the new image..."
+	reboot
+}
+
+rootfs_provisioning() {
+	local ROOTFSDIR="/mnt"
+	local BASEPKGS="linux-base initramfs-tools module-init-tools wget sudo \
+openssh-server whois net-tools vim"
+
+	echo -e "\nHello! rootfs_provisioning here...\n"
+	# brutally erase partition table
+	dd count=256 if=/dev/zero of="$DISK"
+	sync
+	/sbin/kpartx -s "$DISK"
+	# part 1, 256M
+	echo -e "n\np\n\n\n+256M\nw" | fdisk "$DISK"
+	sync
+	sleep 1
+	/sbin/kpartx -s "$DISK"
+	# type W95 FAT32 (LBA)
+	echo -e "t\nc\nw" | fdisk "$DISK"
+	sync
+	sleep 1
+	/sbin/kpartx -s "$DISK"
+	# toogle the bootable flag
+	echo -e "a\n\nw\n" | fdisk "$DISK"
+	sync
+	sleep 1
+	/sbin/kpartx -s "$DISK"
+	# part 2, rest of the disk, Linux
+	echo -e "n\np\n\n\n\nw" | fdisk "$DISK"
+	sync
+	sleep 1
+	/sbin/kpartx -s "$DISK"
+	mkfs.ext4 -F "$DISK"2
+	mkdir "$ROOTFSDIR"
+	mount "$DISK"2 "$ROOTFSDIR"
+	wget -O - "$SERVER/$ROOTFS" | tar xvf - -C "$ROOTFSDIR" 2> /dev/null
+	# policy-rc.d prevents daemon from starting inside a chroot
+	echo "#!/bin/sh" > policy-rc.d
+	echo "" >> policy-rc.d
+	echo "exit 101" >> policy-rc.d
+	cp policy-rc.d "$ROOTFSDIR"/usr/sbin/
+	chmod +x "$ROOTFSDIR"/usr/sbin/policy-rc.d
+	# config files
+	cp /sbin/kernel-img.conf "$ROOTFSDIR"/etc/
+	cp /sbin/interfaces "$ROOTFSDIR"/etc/network/
+	echo "nameserver 8.8.8.8" > "$ROOTFSDIR"/etc/resolv.conf
+	echo -e "127.0.0.1\tlocalhost localhost.localdomain" > "$ROOTFSDIR"/etc/hosts
+	# XXX serial.conf?
+	do_chroot "$ROOTFSDIR" apt-get update
+	do_chroot "$ROOTFSDIR" apt-get -y install $BASEPKGS
+	do_chroot "$ROOTFSDIR" useradd "$USER" -m -p `mkpasswd $PASSWD` -s /bin/bash
+	do_chroot "$ROOTFSDIR" adduser "$USER" adm
+	do_chroot "$ROOTFSDIR" adduser "$USER" sudo
+	do_chroot "$ROOTFSDIR" wget "$SERVER/$KERNEL"
+	# XXX for a proper kernel installation, i need my ppa embedded
+	# XXX flash-kernel pkg
+	do_chroot "$ROOTFSDIR" dpkg -i "$KERNEL"
+	rm "$ROOTFSDIR"/usr/sbin/policy-rc.d
+	sync
+	umount "$ROOTFSDIR"
+    echo "Image provisioning done, rebooting into the new image..."
+	reboot
+}
+
+# let the system settle, load modules, spit out printks, etc
+sleep 5
+print_info
+
+get_msg_and_parse
+
+if [ "$IMAGE" ]; then
+	image_provisioning
+else
+	rootfs_provisioning
+fi
