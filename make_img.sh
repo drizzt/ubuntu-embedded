@@ -23,7 +23,6 @@
 # TODO:
 #
 # - multiple ppa support
-# - additional pkgs support
 # - kernel and bootloader selection support
 # - deboostrap vs ubuntu core support
 # - arch support (arm64? amd64? i386?)
@@ -354,6 +353,7 @@ stack:			release used for the enablement stack (kernel, bootloader and flask-ker
 size:			size of the image file (e.g. 2G, default: 1G)
 user:			credentials of the user created on the target image
 passwd:			same as above, but for the password here
+pkgs:			install additional pkgs (pkgs="pkg1 pkg2 pkg3...")
 rootfs:			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
 EOF
 	exit 1
@@ -392,6 +392,7 @@ while [ $# -gt 0 ]; do
 				[ -z "$arg" -o "$cmd" = "$arg" ] && echo "Error: syntax error for opt: $ARG" && usage
 				#echo "cmd: $cmd arg: ${arg:-null}"
 				case "$cmd" in
+					"pkgs") MPKGS="$arg" ;;
 					"passwd") PASSWD="$arg" ;;
 					"rootfs") UROOTFS="$arg" ;;
 					"size")
@@ -446,13 +447,14 @@ UBOOTPREF=$(get_field "$BOARD" "uboot-prefix") || true
 BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 PPA=$(get_field "$BOARD" "ppa") || true
 KERNEL=$(get_field "$BOARD" "kernel") || true
-PACKAGES=$(get_field "$BOARD" "packages") || true
+BPKGS=$(get_field "$BOARD" "packages") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.10" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
 [ "$DISTRO" = "$STACK" ] && STACK=""
 IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 [ "${IMGSIZE}" -lt "${DEFIMGSIZE}" ] && echo "Error: size can't be smaller than `numfmt --from=auto --to=iec ${DEFIMGSIZE}`" && exit 1
+[ "$BPKGS" -o "$MPKGS" ] && PACKAGES="${BPKGS} ${MPKGS}"
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
@@ -481,6 +483,7 @@ echo $IMGSIZE
 echo $USER
 echo $PASSWD
 echo $KERNEL
+echo $PACKAGES
 echo "------------"
 
 # end of setup_env_generic()
@@ -576,7 +579,7 @@ if [ $ARCH = "armhf" ]; then
 	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 fi
 
-# install additional pakgs if specified
+# install additional pkgs if specified
 [ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y $PACKAGES
 
 # end of install_pkgs_generic()
