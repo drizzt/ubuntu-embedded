@@ -54,6 +54,7 @@ USER="ubuntu"
 PASSWD="ubuntu"
 EMBEDDEDPPA="ppa:p-pisati/embedded"
 KEEP=0
+BASEPKGS="linux-base sudo net-tools vim whois kpartx"
 
 BOARD=
 DISTRO=
@@ -523,6 +524,7 @@ done < $FSTABFILE
 
 cp $QEMU $ROOTFSDIR/usr/bin
 cp /etc/resolv.conf $ROOTFSDIR/etc
+cp /etc/hosts $ROOTFSDIR/etc
 cp $FSTABFILE $ROOTFSDIR/etc/fstab
 [ -n $SERIAL ] && sed "s/ttyX/$SERIAL/g" skel/serial.conf > $ROOTFSDIR/etc/init/${SERIAL}.conf
 do_chroot $ROOTFSDIR useradd $USER -m -p `mkpasswd $PASSWD` -s /bin/bash
@@ -564,7 +566,7 @@ if [ "${PPA}" ]; then
 fi
 # don't run flash-kernel during kernel installation
 export FLASH_KERNEL_SKIP=1
-do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} linux-base sudo net-tools vim
+do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} ${BASEPKGS}
 unset FLASH_KERNEL_SKIP
 
 # flash-kernel-specific-bits - XXX shouldn't we do a better check?
