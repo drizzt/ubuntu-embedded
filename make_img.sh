@@ -354,7 +354,7 @@ stack:			release used for the enablement stack (kernel, bootloader and flask-ker
 size:			size of the image file (e.g. 2G, default: 1G)
 user:			credentials of the user created on the target image
 passwd:			same as above, but for the password here
-rootfs			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
+rootfs:			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
 EOF
 	exit 1
 }
