@@ -53,7 +53,8 @@ USER="ubuntu"
 PASSWD="ubuntu"
 EMBEDDEDPPA="ppa:p-pisati/embedded"
 KEEP=0
-BASEPKGS="linux-base sudo net-tools vim whois kpartx"
+BASEPKGS="linux-base sudo net-tools vim whois kpartx netcat-openbsd"
+SCRIPTDIR="initramfs-scripts"
 
 BOARD=
 DISTRO=
@@ -355,6 +356,7 @@ user:			credentials of the user created on the target image
 passwd:			same as above, but for the password here
 pkgs:			install additional pkgs (pkgs="pkg1 pkg2 pkg3...")
 rootfs:			rootfs tar.gz archive (e.g. ubuntu core), can be local or remote (http/ftp)
+script:			initramfs script to be installed
 EOF
 	exit 1
 }
@@ -395,6 +397,7 @@ while [ $# -gt 0 ]; do
 					"pkgs") MPKGS="$arg" ;;
 					"passwd") PASSWD="$arg" ;;
 					"rootfs") UROOTFS="$arg" ;;
+					"script") MSCRIPT="$arg" ;;
 					"size")
 						USRIMGSIZE=`numfmt --from=iec --invalid=ignore $arg`
 						! [[ $USRIMGSIZE =~ ^[0-9]+$ ]] && echo "Error: invalid input \"$arg\"" && exit 1
@@ -448,6 +451,7 @@ BOOTLOADERS=$(get_field "$BOARD" "bootloaders") || true
 PPA=$(get_field "$BOARD" "ppa") || true
 KERNEL=$(get_field "$BOARD" "kernel") || true
 BPKGS=$(get_field "$BOARD" "packages") || true
+BSCRIPT=$(get_field "$BOARD" "script") || true
 
 # sanitize input params
 [ "${DISTRO}" = "15.10" ] && echo "Error: $DISTRO is only valid as a stack= opt fow now." && exit 1
@@ -455,6 +459,12 @@ BPKGS=$(get_field "$BOARD" "packages") || true
 IMGSIZE=${USRIMGSIZE:-$(echo $DEFIMGSIZE)}
 [ "${IMGSIZE}" -lt "${DEFIMGSIZE}" ] && echo "Error: size can't be smaller than `numfmt --from=auto --to=iec ${DEFIMGSIZE}`" && exit 1
 [ "$BPKGS" -o "$MPKGS" ] && PACKAGES="${BPKGS} ${MPKGS}"
+[ "$BSCRIPT" -o "$MSCRIPT" ] && SCRIPTS="${BSCRIPT} ${MSCRIPT}"
+if [ "$SCRIPTS" ]; then
+	for script in $SCRIPTS; do
+		[ ! -d $SCRIPTDIR/$script ] && echo "Error: $script is not a valid initramfs-script" && exit 1
+	done
+fi
 
 # final environment setup
 trap cleanup 0 1 2 3 9 15
@@ -484,6 +494,7 @@ echo $USER
 echo $PASSWD
 echo $KERNEL
 echo $PACKAGES
+echo $SCRIPTS
 echo "------------"
 
 # end of setup_env_generic()
@@ -581,6 +592,19 @@ fi
 
 # install additional pkgs if specified
 [ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y $PACKAGES
+
+# install any initramfs script
+if [ "$SCRIPTS" ]; then
+	for script in $SCRIPTS; do
+		cp -vR $SCRIPTDIR/$script/hooks $ROOTFSDIR/etc/initramfs-tools
+		cp -vR $SCRIPTDIR/$script/scripts $ROOTFSDIR/etc/initramfs-tools
+		if [ -d "$SCRIPTDIR/$script/BOOTDIR" ]; then
+			cp -vR $SCRIPTDIR/$script/BOOTDIR/* "$BOOTDIR"
+		fi
+	done
+	KVER=`do_chroot "$ROOTFSDIR" linux-version list | linux-version sort | tail -1`
+	FLASH_KERNEL_SKIP=1 do_chroot "$ROOTFSDIR" update-initramfs -u -k $KVER
+fi
 
 # end of install_pkgs_generic()
 
