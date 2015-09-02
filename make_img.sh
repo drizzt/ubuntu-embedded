@@ -330,6 +330,13 @@ bootloader_phase()
 	if [ "${BOOTDEVICE}" -a -z "${BOOTLOADERS}" ]; then
 		cp ${ROOTFSDIR}/boot/uImage ${ROOTFSDIR}/boot/uInitrd ${BOOTDIR}
 	fi
+
+	# install any initramfs BOOTDIR files
+	if [ "$SCRIPTS" -a -d "$SCRIPTDIR/$script/BOOTDIR" ]; then
+		for script in $SCRIPTS; do
+			cp -vR $SCRIPTDIR/$script/BOOTDIR/* "$BOOTDIR"
+		done
+	fi
 }
 
 BOARDS="$(get_all_fields "board")"
@@ -516,7 +523,7 @@ layout_device
 echo "== Init System =="
 mount_dev "${ROOTDEVICE}" "${ROOTFSDIR}"
 if [ "${ROOTFS%%:*}" = "http" -o "${ROOTFS%%:*}" = "ftp" ]; then
-	 wget -qO- "${ROOTFS}" | tar zxf - -C "${ROOTFSDIR}"
+	 wget --verbose -O- "${ROOTFS}" | tar zxf - -C "${ROOTFSDIR}"
 else
 	tar zxf "${ROOTFS}" -C "${ROOTFSDIR}"
 fi
@@ -598,9 +605,6 @@ if [ "$SCRIPTS" ]; then
 	for script in $SCRIPTS; do
 		cp -vR $SCRIPTDIR/$script/hooks $ROOTFSDIR/etc/initramfs-tools
 		cp -vR $SCRIPTDIR/$script/scripts $ROOTFSDIR/etc/initramfs-tools
-		if [ -d "$SCRIPTDIR/$script/BOOTDIR" ]; then
-			cp -vR $SCRIPTDIR/$script/BOOTDIR/* "$BOOTDIR"
-		fi
 	done
 	KVER=`do_chroot "$ROOTFSDIR" linux-version list | linux-version sort | tail -1`
 	FLASH_KERNEL_SKIP=1 do_chroot "$ROOTFSDIR" update-initramfs -u -k $KVER
