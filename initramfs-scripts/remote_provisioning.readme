@@ -1,0 +1,141 @@
+What is it?
+
+An initramfs script that helps to remotely provision and setup an ARM board
+running Ubuntui (strongly biased toward the rpi2 at the moment).
+
+Hardware needed:
+
+- raspberry pi2 board
+- micro usb cable (to power the rpi2 board)
+- ethernet cable
+- microsd (golden image)
+- usb to ttl serial cable (debug and first boot only - e.g.
+  https://www.adafruit.com/products/954)
+- usb disk + power source (the usb hub on the rpi
+  doesn't supply enough power to sustain an usb disk)
+
+Lab setup:
+
+- ethernet networking and 'normal' access to internet (to download packages,
+  apt-get, etc)
+- a dhcp server capable of assigning fixed ip addresses to a fixed Ethernet MAC
+  address
+- an http server capable of serving static files
+
+How to operate:
+
+First boot only:
+
+- stop uboot at prompt
+- 'printenv usbethaddr', that's the fixed MAC address of eth0
+- configure your dhcp server to provide a fixed ip to that MAC
+- 'reset' and starts the provisioning cycle
+
+Normal provisioning life-cycle:
+
+- boot the board, you should see the msg "GOLDEN" among the boot messages
+- wait for the "BOARD INFO" banner
+- send a provisioning msg to the board:
+	
+echo "SERVER=http://$SERVERIP ROOTFS=rootfs.tar KERNEL=kernel.deb" | nc $BOARDIP
+
+where ROOTFS is an uncompressed rootfs tarball[1], and KERNEL is kernel in a deb
+archive[2].
+
+1: gunzip http://cdimage.ubuntu.com/ubuntu-core/releases/15.04/release/ubuntu-core-15.04-core-armhf.tar.gz
+2: https://launchpad.net/~p-pisati/+archive/ubuntu/embedded/+files/linux-image-3.19.1-15-generic-bcm2709_3.19.1-15.15_armhf.deb
+
+or
+
+echo "SERVER=http://$SERVERIP IMAGE=disk.img" | nc $BOARDIP
+
+where IMAGE is a disk image[3] (with a dummy first partition and a second partition
+fully configured).
+
+3: http://people.canonical.com/~ppisati/raspberrypi2_images/disk-15.04-raspy2.img
+
+- wait for the board to download, setup and provision itself
+- once done, it should automatically reboot
+- watch for the message "SCRATCH" among the boot messages, and wait for boot
+  completion
+- done, you can ssh into the provisioned board (ubuntu/ubuntu) and run all your
+  tests
+
+Preconfigured uboot environment:
+
+GOLDEN=true
+DISK=/dev/sda
+
+Preconfigured initrd env:
+
+PORT=1234
+DISK=/dev/sda
+SERVER=""
+IMAGE=""
+ROOTFS=""
+KERNEL=""
+
+Provisioning setup msg: a single ascii-7bit text msg
+
+Format:
+
+SERVER=http://server/path (IMAGE=file.img|ROOTFS=file.tar KERNEL=file.deb)
+
+Disks setup: 
+	golden image (first vfat on sd card)
+	scratch/working partition (second partition on the usb disk ext4 formatted)
+
+Finite state machine logic AKA How it works:
+
+every time the board is rebooted, it starts executing uboot from the sdcard:
+	- if GOLDEN == true:
+		- set GOLDEN = false (prepare to boot into the previsioned image for the next reboot)
+		- boots board into the golden image and pass control to initrd's
+		  local-premount provisioning script there
+		=== initrd takes control from here ===
+		- print banner and board's hardware information:
+			- eth0 mac address
+			- eth0 ip (obtained via dhcp) 
+			- listening PORT
+		- nc -l PORT (tcp wait indefinitely here with ACT led blinking in a fixed
+		  pattern - heartbeat? - while waiting the provisioning setup msg)
+		- receive provisioning setup msg, wait for socket closure and starts
+		  parsing
+		- if IMAGE != NULL:
+			- echo "GET $IMAGE" | nc $SERVER 80 > $DISK
+			- sync && echo "we are done, rebooting..."
+			- reboot
+		- else:
+			- partition and format $DISK with a first dummy part, and a second ext4 partition
+			- extract rootfs in $DISK2
+			- chroot into the working partition
+			- create/update a user ubuntu/ubuntu with passwordless sudo
+			- install openssh-server, wget
+			- download $KERNEL from $SERVER and install it
+			- sync && echo "we are done, rebooting..."
+			- reboot
+	- elif GOLDEN == false:
+		- set GOLDEN = true (for the next reboot)
+		- boot sytem on DISK (the working partition):
+			- load from ext4 $DIS partition 2 /boot/vmlinuz
+			- load from ext4 $DISK partition 2 /boot/initrd.img
+			- set bootargs = "smsc95xx.macaddr=MACFROMBOARD console=ttyAMA0,115200 root=/dev/sda2 rootwait"
+			- bootz ...
+
+TODO:
+	- the weakness of this design is the sdcard that could end up being corrupted or
+	  wrecked at any time if the working image mounts it (and wreck it), or
+	  simply if it gets mounted, the kernel panics and we force a reboot (and
+	  and thus we don't nicely umount it)
+	- there are no checks while downloading the IMAGE/ROOTFS/KERNEL, if the file is
+	  not there, download fails and reboot
+	- first boot is annoying: user has to stop at uboot prompt, read a variable,
+	  etc
+	- can't set any uboot var from inside initrd - no communication between the
+	  provisioning script and the boot logic
+
+Feature request:
+	- support compressed tarball for ROOTFS
+	- fs choice? (XFS, BTRFS, ZFS, etc)
+	- support for more than a single disk?
+	- remote logging would be nice
