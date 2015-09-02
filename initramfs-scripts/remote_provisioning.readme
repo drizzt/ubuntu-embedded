@@ -3,6 +3,10 @@ What is it?
 An initramfs script that helps to remotely provision and setup an ARM board
 running Ubuntui (strongly biased toward the rpi2 at the moment).
 
+A very crude prebuilt image is available here:
+
+http://people.canonical.com/~ppisati/raspberrypi2_images/disk-15.04-raspy2-remote_provisioning.img
+
 Hardware needed:
 
 - raspberry pi2 board
