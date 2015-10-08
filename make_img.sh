@@ -593,7 +593,7 @@ unset FLASH_KERNEL_SKIP
 # flash-kernel-specific-bits - XXX shouldn't we do a better check?
 if [ $ARCH = "armhf" ]; then
 	do_chroot $ROOTFSDIR apt-get -y install u-boot-tools flash-kernel
-	do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE"
+	do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE" --nobootdevice --nodtbpath
 	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 fi
 
