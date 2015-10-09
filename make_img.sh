@@ -44,7 +44,7 @@
 
 set -e
 
-export LC_ALL=C
+export LC_ALL=C PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 DB="boards.db"
 KERNELCONF="kernel-img.conf"
 DEFIMGSIZE="2147483648" # 2GB
