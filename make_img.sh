@@ -579,6 +579,8 @@ do_chroot $ROOTFSDIR apt-get update
 # the embedded PPA is mandatory
 do_chroot $ROOTFSDIR apt-get install -y software-properties-common
 do_chroot $ROOTFSDIR add-apt-repository -y ${EMBEDDEDPPA}
+# pin the embedded ppa
+cp skel/embedded-ppa $ROOTFSDIR/etc/apt/preferences.d/
 do_chroot $ROOTFSDIR apt-get update
 # if specified, add a 3rd party PPA
 if [ "${PPA}" ]; then
