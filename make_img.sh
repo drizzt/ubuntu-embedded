@@ -258,6 +258,10 @@ layout_device()
 		PHYSDEVICE="${DEVICE}"
 		BOOTLOADERDEVICE="${DEVICE}"
 	fi
+	# wait until PHYSDEVICE1 is created
+	until [ -b ${PHYSDEVICE}1 ]; do
+		sleep 0.5
+	done
 	echo "2) Making filesystems..."
 	PART=0
 	for i in $LAYOUT; do
