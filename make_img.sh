@@ -95,6 +95,13 @@ ubuntuversion() {
 	echo "${RET}"
 }
 
+ubunturecentversion() {
+	local ARCH="$1"
+	local DISTRO="$2"
+
+	wget -O- http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/MD5SUMS | sed -n "s/^[[:xdigit:]]*[[:space:]]*\*ubuntu-core-\([^-]*\)-core-$ARCH.tar.gz$/\1/p" | sort -V | tail -n 1
+}
+
 ugetrel()
 {
 	echo $(ubuntuversion "release" "$1")
@@ -477,7 +484,7 @@ fi
 trap cleanup 0 1 2 3 9 15
 KERNEL=${KERNEL:-linux-image-generic}
 DEVICE=${DEVICE:-disk-$(date +%F)-$DISTRO-$BOARD.img}
-ROOTFS="${UROOTFS:-http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$DISTRO-core-$ARCH.tar.gz}"
+ROOTFS="${UROOTFS:-http://cdimage.ubuntu.com/ubuntu-core/releases/$DISTRO/release/ubuntu-core-$(ubunturecentversion $ARCH $DISTRO)-core-$ARCH.tar.gz}"
 ROOTFSDIR=$(mktemp -d build/embedded-rootfs.XXXXXX)
 BOOTDIR=$(mktemp -d build/embedded-boot.XXXXXX)
 FSTABFILE=$(mktemp build/embedded-fstab.XXXXXX)
