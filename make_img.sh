@@ -586,6 +586,10 @@ if [ "${STACK}" ]; then
 	sed "s/${DCOD}/${SCOD}/g" $ROOTFSDIR/etc/apt/sources.list > $ROOTFSDIR/etc/apt/sources.list.d/${SCOD}.list
 	sed -e "s/STACK/${SCOD}/g" -e "s/DISTRO/${DCOD}/g" skel/apt.preferences > $ROOTFSDIR/etc/apt/preferences.d/enablement-stack.${SCOD}
 fi
+# enable universe if you want to install additional packages (just in case)
+if [ "${MPKGS}" ]; then
+	sed -i '/universe$/s/^# //' $ROOTFSDIR/etc/apt/sources.list
+fi
 do_chroot $ROOTFSDIR apt-get update
 # the embedded PPA is mandatory
 do_chroot $ROOTFSDIR apt-get install -y software-properties-common
