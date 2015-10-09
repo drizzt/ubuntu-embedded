@@ -605,6 +605,8 @@ fi
 # don't run flash-kernel during kernel installation
 export FLASH_KERNEL_SKIP=1
 do_chroot $ROOTFSDIR apt-get -y install ${KERNEL} ${BASEPKGS}
+# install additional pkgs if specified
+[ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y $PACKAGES
 unset FLASH_KERNEL_SKIP
 
 # flash-kernel-specific-bits - XXX shouldn't we do a better check?
@@ -613,9 +615,6 @@ if [ $ARCH = "armhf" ]; then
 	do_chroot $ROOTFSDIR flash-kernel --machine "$MACHINE" --nobootdevice --nodtbpath
 	[ "${UENV}" ] && cp skel/"uEnv.${UENV}" $ROOTFSDIR/boot/uEnv.txt
 fi
-
-# install additional pkgs if specified
-[ -n "$PACKAGES" ] && do_chroot "$ROOTFSDIR" apt-get install -y $PACKAGES
 
 # install any initramfs script
 if [ "$SCRIPTS" ]; then
