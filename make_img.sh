@@ -194,6 +194,7 @@ cleanup()
 	sync
 	[ -n "$TAILPID" ] && kill -9 $TAILPID
 	if [ -e "$ROOTFSDIR" ]; then
+		rm -f $ROOTFSDIR/usr/bin/${QEMU%*/}
 		umount $ROOTFSDIR/sys >/dev/null 2>&1 || true
 		umount $ROOTFSDIR/proc >/dev/null 2>&1 || true
 		tac $MOUNTFILE | while read line; do
