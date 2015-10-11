@@ -22,7 +22,6 @@
 
 # TODO:
 #
-# - multiple ppa support
 # - kernel and bootloader selection support
 # - deboostrap vs ubuntu core support
 # - arch support (arm64? amd64? i386?)
@@ -601,7 +600,9 @@ cp skel/embedded-ppa $ROOTFSDIR/etc/apt/preferences.d/
 do_chroot $ROOTFSDIR apt-get update
 # if specified, add a 3rd party PPA
 if [ "${PPA}" ]; then
-	do_chroot $ROOTFSDIR add-apt-repository -y ${PPA}
+	for ppa in $PPA; do
+		do_chroot $ROOTFSDIR add-apt-repository -y ${ppa}
+	done
 	do_chroot $ROOTFSDIR apt-get update
 fi
 # don't run flash-kernel during kernel installation
