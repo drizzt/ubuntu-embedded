@@ -61,3 +61,4 @@ layout: BOOTDIR,vfat,256M /,ext4,FILL
 bootloaders: ALL
 serial: ttyAMA0
 kernel: linux-bcm2709
+ppa: ppa:fo0bar/rpi2
